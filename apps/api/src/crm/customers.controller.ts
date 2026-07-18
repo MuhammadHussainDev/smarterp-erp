@@ -1,0 +1,40 @@
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from "@nestjs/common";
+import { ApiTags, ApiOperation } from "@nestjs/swagger";
+import { CustomersService } from "./customers.service";
+import { CurrentUser } from "../common/decorators/current-user.decorator";
+
+@ApiTags("crm")
+@Controller("crm/customers")
+export class CustomersController {
+  constructor(private service: CustomersService) {}
+
+  @Get()
+  @ApiOperation({ summary: "List customers" })
+  findAll(@CurrentUser("tenantId") tenantId: string, @Query("page") page?: number, @Query("limit") limit?: number) {
+    return this.service.findAll(tenantId, page, limit);
+  }
+
+  @Get(":id")
+  @ApiOperation({ summary: "Get customer" })
+  findOne(@CurrentUser("tenantId") tenantId: string, @Param("id") id: string) {
+    return this.service.findOne(tenantId, id);
+  }
+
+  @Post()
+  @ApiOperation({ summary: "Create customer" })
+  create(@CurrentUser("tenantId") tenantId: string, @Body() dto: any) {
+    return this.service.create(tenantId, dto);
+  }
+
+  @Patch(":id")
+  @ApiOperation({ summary: "Update customer" })
+  update(@CurrentUser("tenantId") tenantId: string, @Param("id") id: string, @Body() dto: any) {
+    return this.service.update(tenantId, id, dto);
+  }
+
+  @Delete(":id")
+  @ApiOperation({ summary: "Deactivate customer" })
+  remove(@CurrentUser("tenantId") tenantId: string, @Param("id") id: string) {
+    return this.service.remove(tenantId, id);
+  }
+}
