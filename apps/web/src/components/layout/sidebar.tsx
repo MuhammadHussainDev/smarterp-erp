@@ -115,7 +115,7 @@ export function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-background overflow-y-auto">
       <div className="flex h-16 items-center border-b px-6">
-        <Link href="/dashboard" className="text-xl font-bold">
+        <Link href="/" className="text-xl font-bold">
           SmartERP AI
         </Link>
       </div>

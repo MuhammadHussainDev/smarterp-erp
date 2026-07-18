@@ -28,7 +28,7 @@ export default function LoginPage() {
       }
 
       setAuth(data.user, data.accessToken);
-      router.push("/dashboard");
+      router.push("/");
     } catch (err: any) {
       setError(err.message);
     } finally {
