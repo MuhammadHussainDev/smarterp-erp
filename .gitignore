@@ -7,4 +7,6 @@ dist/
 .DS_Store
 coverage/
 .turbo/
-.smarterp.db
+*.db
+__pycache__/
+*.pyc

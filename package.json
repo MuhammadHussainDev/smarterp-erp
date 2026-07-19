@@ -2,15 +2,13 @@
   "name": "smarterp-ai",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/web"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
-    "dev:api": "npm run dev -w apps/api",
+    "dev": "concurrently \"npm run dev:web\"",
     "dev:web": "npm run dev -w apps/web",
-    "build": "npm run build -w apps/api && npm run build -w apps/web",
-    "lint": "npm run lint -w apps/api && npm run lint -w apps/web",
-    "test": "npm run test -w apps/api"
+    "build": "npm run build -w apps/web",
+    "lint": "npm run lint -w apps/web"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
