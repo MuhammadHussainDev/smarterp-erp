@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: smarterp-api
+    runtime: node
+    rootDir: apps/api
+    buildCommand: npm install && npx prisma generate && npx nest build
+    startCommand: npx prisma db push --skip-generate && node dist/main
+    envVars:
+      - key: DATABASE_URL
+        value: file:./smarterp.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: API_PORT
+        fromService:
+          name: smarterp-api
+          type: web
+          property: port
+      - key: NODE_ENV
+        value: production
