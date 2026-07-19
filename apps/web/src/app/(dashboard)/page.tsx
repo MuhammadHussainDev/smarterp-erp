@@ -8,9 +8,10 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 export default function DashboardPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: () => api.get<any>("/dashboard/stats"),
+    retry: false,
   });
 
   if (isLoading) {
@@ -19,6 +20,26 @@ export default function DashboardPage() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="h-32 animate-pulse rounded-lg bg-muted" />
         ))}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Welcome to SmartERP AI</p>
+        </div>
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6">
+          <h2 className="font-semibold text-destructive">Connection Error</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Unable to connect to the API server. Please ensure the backend is running.
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {(error as any)?.message || "Unknown error"}
+          </p>
+        </div>
       </div>
     );
   }
