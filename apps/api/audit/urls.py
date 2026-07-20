@@ -1,7 +1,7 @@
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 from . import views
 
-router = DefaultRouter()
-router.register(r'audit-logs', views.AuditLogViewSet)
-
-urlpatterns = router.urls
+urlpatterns = [
+    path('', views.AuditLogViewSet.as_view({'get': 'list'})),
+    path('<uuid:pk>/', views.AuditLogViewSet.as_view({'get': 'retrieve'})),
+]

@@ -87,3 +87,15 @@ def insights(request):
             },
         ]
     })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def suggestions(request, context):
+    from inventory.models import Product
+    suggestions_list = []
+    if context == 'product':
+        products = Product.objects.filter(tenant=request.user.tenant)[:5]
+        for p in products:
+            suggestions_list.append({'id': p.id, 'label': p.name, 'value': p.name})
+    return Response(suggestions_list)

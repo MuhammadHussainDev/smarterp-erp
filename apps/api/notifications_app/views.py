@@ -27,7 +27,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     def mark_all_read(self, request):
         Notification.objects.filter(
             tenant=request.user.tenant,
-            user=request.user,
+            user=self.request.user,
             is_read=False
         ).update(is_read=True)
         return Response({'status': 'ok'})
@@ -36,7 +36,16 @@ class NotificationViewSet(viewsets.ModelViewSet):
     def unread_count(self, request):
         count = Notification.objects.filter(
             tenant=request.user.tenant,
-            user=request.user,
+            user=self.request.user,
             is_read=False
         ).count()
         return Response({'count': count})
+
+    @action(detail=False, methods=['delete'], url_path='read')
+    def clear_read(self, request):
+        Notification.objects.filter(
+            tenant=request.user.tenant,
+            user=self.request.user,
+            is_read=True
+        ).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

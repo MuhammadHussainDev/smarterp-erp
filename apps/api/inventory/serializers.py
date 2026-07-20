@@ -16,7 +16,7 @@ class BrandSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Brand
-        fields = '__all__'
+        fields = ['id', 'tenant', 'tenant_name', 'name', 'description', 'is_active', 'created_at', 'updated_at']
 
 
 class UnitSerializer(serializers.ModelSerializer):

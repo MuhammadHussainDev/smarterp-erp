@@ -4,13 +4,16 @@ from .models import (Payroll, PayrollItem, Benefit, EmployeeBenefit,
 
 
 class PayrollItemSerializer(serializers.ModelSerializer):
-    employee_name = serializers.SerializerMethodField()
+    employeeName = serializers.SerializerMethodField()
+    basicSalary = serializers.FloatField(source='basic_salary')
+    netSalary = serializers.FloatField(source='net_salary')
 
     class Meta:
         model = PayrollItem
-        fields = '__all__'
+        fields = ['id', 'payroll', 'employee', 'employeeName', 'basicSalary',
+                  'allowances', 'deductions', 'tax', 'netSalary']
 
-    def get_employee_name(self, obj):
+    def get_employeeName(self, obj):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
 
 
@@ -29,25 +32,28 @@ class BenefitSerializer(serializers.ModelSerializer):
 
 
 class EmployeeBenefitSerializer(serializers.ModelSerializer):
-    employee_name = serializers.SerializerMethodField()
-    benefit_name = serializers.CharField(source='benefit.name', read_only=True)
+    employeeName = serializers.SerializerMethodField()
+    benefitName = serializers.CharField(source='benefit.name', read_only=True)
+    benefit_type = serializers.CharField(source='benefit.type', read_only=True)
 
     class Meta:
         model = EmployeeBenefit
-        fields = '__all__'
+        fields = ['id', 'tenant', 'employee', 'benefit', 'employeeName',
+                  'benefitName', 'benefit_type', 'amount']
 
-    def get_employee_name(self, obj):
+    def get_employeeName(self, obj):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
 
 
 class PerformanceReviewSerializer(serializers.ModelSerializer):
-    employee_name = serializers.SerializerMethodField()
+    employeeName = serializers.SerializerMethodField()
 
     class Meta:
         model = PerformanceReview
-        fields = '__all__'
+        fields = ['id', 'tenant', 'employee', 'employeeName', 'review_date',
+                  'rating', 'comments']
 
-    def get_employee_name(self, obj):
+    def get_employeeName(self, obj):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
 
 
@@ -58,12 +64,13 @@ class TrainingSerializer(serializers.ModelSerializer):
 
 
 class EmployeeTrainingSerializer(serializers.ModelSerializer):
-    employee_name = serializers.SerializerMethodField()
-    training_title = serializers.CharField(source='training.title', read_only=True)
+    employeeName = serializers.SerializerMethodField()
+    programTitle = serializers.CharField(source='training.title', read_only=True)
 
     class Meta:
         model = EmployeeTraining
-        fields = '__all__'
+        fields = ['id', 'tenant', 'employee', 'training', 'employeeName',
+                  'programTitle', 'status', 'completed_date']
 
-    def get_employee_name(self, obj):
+    def get_employeeName(self, obj):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
