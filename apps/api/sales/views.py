@@ -1,4 +1,5 @@
 from rest_framework import viewsets
+from accounts.mixins import TenantAwareViewSet
 from .models import (Quotation, QuotationItem, SalesOrder, SalesOrderItem,
                      Invoice, Payment, DeliveryNote, CreditNote)
 from .serializers import (QuotationSerializer, QuotationItemSerializer,
@@ -7,52 +8,52 @@ from .serializers import (QuotationSerializer, QuotationItemSerializer,
                           DeliveryNoteSerializer, CreditNoteSerializer)
 
 
-class QuotationViewSet(viewsets.ModelViewSet):
+class QuotationViewSet(TenantAwareViewSet):
     queryset = Quotation.objects.all()
     serializer_class = QuotationSerializer
     filterset_fields = ['tenant', 'status', 'customer']
     search_fields = ['number']
 
 
-class QuotationItemViewSet(viewsets.ModelViewSet):
+class QuotationItemViewSet(TenantAwareViewSet):
     queryset = QuotationItem.objects.all()
     serializer_class = QuotationItemSerializer
     filterset_fields = ['quotation']
 
 
-class SalesOrderViewSet(viewsets.ModelViewSet):
+class SalesOrderViewSet(TenantAwareViewSet):
     queryset = SalesOrder.objects.all()
     serializer_class = SalesOrderSerializer
     filterset_fields = ['tenant', 'status', 'customer']
     search_fields = ['number']
 
 
-class SalesOrderItemViewSet(viewsets.ModelViewSet):
+class SalesOrderItemViewSet(TenantAwareViewSet):
     queryset = SalesOrderItem.objects.all()
     serializer_class = SalesOrderItemSerializer
     filterset_fields = ['sales_order']
 
 
-class InvoiceViewSet(viewsets.ModelViewSet):
+class InvoiceViewSet(TenantAwareViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
     filterset_fields = ['tenant', 'status', 'customer']
     search_fields = ['number']
 
 
-class PaymentViewSet(viewsets.ModelViewSet):
+class PaymentViewSet(TenantAwareViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
     filterset_fields = ['tenant', 'method', 'customer', 'invoice']
 
 
-class DeliveryNoteViewSet(viewsets.ModelViewSet):
+class DeliveryNoteViewSet(TenantAwareViewSet):
     queryset = DeliveryNote.objects.all()
     serializer_class = DeliveryNoteSerializer
     filterset_fields = ['tenant', 'status', 'customer']
 
 
-class CreditNoteViewSet(viewsets.ModelViewSet):
+class CreditNoteViewSet(TenantAwareViewSet):
     queryset = CreditNote.objects.all()
     serializer_class = CreditNoteSerializer
     filterset_fields = ['tenant', 'status', 'customer', 'invoice']

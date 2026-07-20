@@ -1,11 +1,12 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from accounts.mixins import TenantAwareViewSet
 from .models import Notification
 from .serializers import NotificationSerializer
 
 
-class NotificationViewSet(viewsets.ModelViewSet):
+class NotificationViewSet(TenantAwareViewSet):
     queryset = Notification.objects.all().order_by('-created_at')
     serializer_class = NotificationSerializer
     filterset_fields = ['type', 'is_read']
