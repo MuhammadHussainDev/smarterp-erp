@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from accounts.mixins import TenantAwareModelSerializer
 
 
 class ChatRequestSerializer(serializers.Serializer):
@@ -11,3 +12,4 @@ class InsightSerializer(serializers.Serializer):
     title = serializers.CharField()
     description = serializers.CharField()
     data = serializers.JSONField(required=False)
+

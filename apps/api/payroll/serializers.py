@@ -1,9 +1,10 @@
 from rest_framework import serializers
+from accounts.mixins import TenantAwareModelSerializer
 from .models import (Payroll, PayrollItem, Benefit, EmployeeBenefit,
                      PerformanceReview, Training, EmployeeTraining)
 
 
-class PayrollItemSerializer(serializers.ModelSerializer):
+class PayrollItemSerializer(TenantAwareModelSerializer):
     employee_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -14,7 +15,7 @@ class PayrollItemSerializer(serializers.ModelSerializer):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
 
 
-class PayrollSerializer(serializers.ModelSerializer):
+class PayrollSerializer(TenantAwareModelSerializer):
     items = PayrollItemSerializer(many=True, read_only=True)
 
     class Meta:
@@ -22,13 +23,13 @@ class PayrollSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class BenefitSerializer(serializers.ModelSerializer):
+class BenefitSerializer(TenantAwareModelSerializer):
     class Meta:
         model = Benefit
         fields = '__all__'
 
 
-class EmployeeBenefitSerializer(serializers.ModelSerializer):
+class EmployeeBenefitSerializer(TenantAwareModelSerializer):
     employee_name = serializers.SerializerMethodField()
     benefit_name = serializers.CharField(source='benefit.name', read_only=True)
 
@@ -40,7 +41,7 @@ class EmployeeBenefitSerializer(serializers.ModelSerializer):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
 
 
-class PerformanceReviewSerializer(serializers.ModelSerializer):
+class PerformanceReviewSerializer(TenantAwareModelSerializer):
     employee_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -51,13 +52,13 @@ class PerformanceReviewSerializer(serializers.ModelSerializer):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
 
 
-class TrainingSerializer(serializers.ModelSerializer):
+class TrainingSerializer(TenantAwareModelSerializer):
     class Meta:
         model = Training
         fields = '__all__'
 
 
-class EmployeeTrainingSerializer(serializers.ModelSerializer):
+class EmployeeTrainingSerializer(TenantAwareModelSerializer):
     employee_name = serializers.SerializerMethodField()
     training_title = serializers.CharField(source='training.title', read_only=True)
 
@@ -67,3 +68,5 @@ class EmployeeTrainingSerializer(serializers.ModelSerializer):
 
     def get_employee_name(self, obj):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
+
+

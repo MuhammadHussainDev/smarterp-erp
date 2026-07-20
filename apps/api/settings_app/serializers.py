@@ -1,14 +1,15 @@
 from rest_framework import serializers
+from accounts.mixins import TenantAwareModelSerializer
 from .models import Company, Branch, Department
 
 
-class CompanySerializer(serializers.ModelSerializer):
+class CompanySerializer(TenantAwareModelSerializer):
     class Meta:
         model = Company
         fields = '__all__'
 
 
-class BranchSerializer(serializers.ModelSerializer):
+class BranchSerializer(TenantAwareModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:
@@ -16,9 +17,11 @@ class BranchSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class DepartmentSerializer(serializers.ModelSerializer):
+class DepartmentSerializer(TenantAwareModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:
         model = Department
         fields = '__all__'
+
+

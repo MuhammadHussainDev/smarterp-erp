@@ -1,9 +1,10 @@
 from rest_framework import serializers
+from accounts.mixins import TenantAwareModelSerializer
 from .models import (Category, Brand, Unit, Product, Warehouse,
                      Stock, StockTransfer, StockTransferItem)
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class CategorySerializer(TenantAwareModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:
@@ -11,7 +12,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class BrandSerializer(serializers.ModelSerializer):
+class BrandSerializer(TenantAwareModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:
@@ -19,7 +20,7 @@ class BrandSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class UnitSerializer(serializers.ModelSerializer):
+class UnitSerializer(TenantAwareModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:
@@ -27,7 +28,7 @@ class UnitSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ProductSerializer(serializers.ModelSerializer):
+class ProductSerializer(TenantAwareModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
     brand_name = serializers.CharField(source='brand.name', read_only=True)
@@ -38,7 +39,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class WarehouseSerializer(serializers.ModelSerializer):
+class WarehouseSerializer(TenantAwareModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:
@@ -46,7 +47,7 @@ class WarehouseSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class StockSerializer(serializers.ModelSerializer):
+class StockSerializer(TenantAwareModelSerializer):
     warehouse_name = serializers.CharField(source='warehouse.name', read_only=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_sku = serializers.CharField(source='product.sku', read_only=True)
@@ -56,7 +57,7 @@ class StockSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class StockTransferItemSerializer(serializers.ModelSerializer):
+class StockTransferItemSerializer(TenantAwareModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
 
     class Meta:
@@ -64,7 +65,7 @@ class StockTransferItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class StockTransferSerializer(serializers.ModelSerializer):
+class StockTransferSerializer(TenantAwareModelSerializer):
     items = StockTransferItemSerializer(many=True, read_only=True)
     source_warehouse_name = serializers.CharField(source='source_warehouse.name', read_only=True)
     destination_warehouse_name = serializers.CharField(source='destination_warehouse.name', read_only=True)
@@ -72,3 +73,5 @@ class StockTransferSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockTransfer
         fields = '__all__'
+
+
