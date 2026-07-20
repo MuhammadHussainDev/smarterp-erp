@@ -11,7 +11,8 @@ export default function DashboardPage() {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: () => api.get<any>("/dashboard/stats"),
-    retry: false,
+    retry: 2,
+    staleTime: 30000,
   });
 
   if (isLoading) {
