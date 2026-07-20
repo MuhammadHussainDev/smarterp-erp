@@ -18,7 +18,9 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_URL}${endpoint}`, {
+  const url = `${API_URL}${endpoint}${!endpoint.endsWith("/") && !endpoint.includes("?") ? "/" : ""}`;
+
+  const res = await fetch(url, {
     method: options.method || "GET",
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
