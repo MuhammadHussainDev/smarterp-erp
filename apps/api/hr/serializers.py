@@ -1,9 +1,8 @@
 from rest_framework import serializers
-from accounts.mixins import TenantAwareModelSerializer
 from .models import Employee, Attendance, LeaveType, LeaveRequest
 
 
-class EmployeeSerializer(TenantAwareModelSerializer):
+class EmployeeSerializer(serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:
@@ -11,7 +10,7 @@ class EmployeeSerializer(TenantAwareModelSerializer):
         fields = '__all__'
 
 
-class AttendanceSerializer(TenantAwareModelSerializer):
+class AttendanceSerializer(serializers.ModelSerializer):
     employee_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -22,13 +21,13 @@ class AttendanceSerializer(TenantAwareModelSerializer):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
 
 
-class LeaveTypeSerializer(TenantAwareModelSerializer):
+class LeaveTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaveType
         fields = '__all__'
 
 
-class LeaveRequestSerializer(TenantAwareModelSerializer):
+class LeaveRequestSerializer(serializers.ModelSerializer):
     employee_name = serializers.SerializerMethodField()
     leave_type_name = serializers.CharField(source='leave_type.name', read_only=True)
 
@@ -38,5 +37,3 @@ class LeaveRequestSerializer(TenantAwareModelSerializer):
 
     def get_employee_name(self, obj):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
-
-

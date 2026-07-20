@@ -1,11 +1,9 @@
 from rest_framework import viewsets
-from accounts.mixins import TenantAwareViewSet
+from tenant_mixin import TenantViewSetMixin
 from .models import Recruitment
 from .serializers import RecruitmentSerializer
 
 
-class RecruitmentViewSet(TenantAwareViewSet):
+class RecruitmentViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
     queryset = Recruitment.objects.all()
     serializer_class = RecruitmentSerializer
-    filterset_fields = ['tenant', 'status', 'department']
-    search_fields = ['position']

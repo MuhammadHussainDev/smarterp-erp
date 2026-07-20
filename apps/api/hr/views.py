@@ -1,30 +1,25 @@
 from rest_framework import viewsets
-from accounts.mixins import TenantAwareViewSet
+from tenant_mixin import TenantViewSetMixin
 from .models import Employee, Attendance, LeaveType, LeaveRequest
 from .serializers import (EmployeeSerializer, AttendanceSerializer,
                           LeaveTypeSerializer, LeaveRequestSerializer)
 
 
-class EmployeeViewSet(TenantAwareViewSet):
+class EmployeeViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
-    filterset_fields = ['tenant', 'status', 'department']
-    search_fields = ['first_name', 'last_name', 'employee_code', 'email']
 
 
-class AttendanceViewSet(TenantAwareViewSet):
+class AttendanceViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
-    filterset_fields = ['tenant', 'status', 'employee', 'date']
 
 
-class LeaveTypeViewSet(TenantAwareViewSet):
+class LeaveTypeViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
     queryset = LeaveType.objects.all()
     serializer_class = LeaveTypeSerializer
-    filterset_fields = ['tenant']
 
 
-class LeaveRequestViewSet(TenantAwareViewSet):
+class LeaveRequestViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
     queryset = LeaveRequest.objects.all()
     serializer_class = LeaveRequestSerializer
-    filterset_fields = ['tenant', 'status', 'employee', 'leave_type']

@@ -1,10 +1,8 @@
 from rest_framework import serializers
-from accounts.mixins import TenantAwareModelSerializer
 from .models import Customer, Contact, Lead, Opportunity, Meeting, Note
 
 
-class CustomerSerializer(TenantAwareModelSerializer):
-    tenant = serializers.PrimaryKeyRelatedField(read_only=True)
+class CustomerSerializer(serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:
@@ -12,7 +10,7 @@ class CustomerSerializer(TenantAwareModelSerializer):
         fields = '__all__'
 
 
-class ContactSerializer(TenantAwareModelSerializer):
+class ContactSerializer(serializers.ModelSerializer):
     customer_name = serializers.CharField(source='customer.name', read_only=True)
 
     class Meta:
@@ -20,7 +18,7 @@ class ContactSerializer(TenantAwareModelSerializer):
         fields = '__all__'
 
 
-class LeadSerializer(TenantAwareModelSerializer):
+class LeadSerializer(serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
     customer_name = serializers.CharField(source='customer.name', read_only=True)
 
@@ -29,7 +27,7 @@ class LeadSerializer(TenantAwareModelSerializer):
         fields = '__all__'
 
 
-class OpportunitySerializer(TenantAwareModelSerializer):
+class OpportunitySerializer(serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
     customer_name = serializers.CharField(source='customer.name', read_only=True)
 
@@ -38,7 +36,7 @@ class OpportunitySerializer(TenantAwareModelSerializer):
         fields = '__all__'
 
 
-class MeetingSerializer(TenantAwareModelSerializer):
+class MeetingSerializer(serializers.ModelSerializer):
     customer_name = serializers.CharField(source='customer.name', read_only=True)
 
     class Meta:
@@ -46,7 +44,7 @@ class MeetingSerializer(TenantAwareModelSerializer):
         fields = '__all__'
 
 
-class NoteSerializer(TenantAwareModelSerializer):
+class NoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
         fields = '__all__'

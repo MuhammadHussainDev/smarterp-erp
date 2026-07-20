@@ -1,9 +1,8 @@
 from rest_framework import serializers
-from accounts.mixins import TenantAwareModelSerializer
 from .models import Account, JournalEntry, JournalEntryLine, Budget, TaxRate
 
 
-class AccountSerializer(TenantAwareModelSerializer):
+class AccountSerializer(serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:
@@ -11,7 +10,7 @@ class AccountSerializer(TenantAwareModelSerializer):
         fields = '__all__'
 
 
-class JournalEntryLineSerializer(TenantAwareModelSerializer):
+class JournalEntryLineSerializer(serializers.ModelSerializer):
     account_code = serializers.CharField(source='account.code', read_only=True)
     account_name = serializers.CharField(source='account.name', read_only=True)
 
@@ -20,7 +19,7 @@ class JournalEntryLineSerializer(TenantAwareModelSerializer):
         fields = '__all__'
 
 
-class JournalEntrySerializer(TenantAwareModelSerializer):
+class JournalEntrySerializer(serializers.ModelSerializer):
     lines = JournalEntryLineSerializer(many=True, read_only=True)
 
     class Meta:
@@ -28,7 +27,7 @@ class JournalEntrySerializer(TenantAwareModelSerializer):
         fields = '__all__'
 
 
-class BudgetSerializer(TenantAwareModelSerializer):
+class BudgetSerializer(serializers.ModelSerializer):
     account_code = serializers.CharField(source='account.code', read_only=True)
     account_name = serializers.CharField(source='account.name', read_only=True)
 
@@ -37,9 +36,7 @@ class BudgetSerializer(TenantAwareModelSerializer):
         fields = '__all__'
 
 
-class TaxRateSerializer(TenantAwareModelSerializer):
+class TaxRateSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaxRate
         fields = '__all__'
-
-

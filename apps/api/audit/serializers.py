@@ -1,9 +1,8 @@
 from rest_framework import serializers
-from accounts.mixins import TenantAwareModelSerializer
 from .models import AuditLog
 
 
-class AuditLogSerializer(TenantAwareModelSerializer):
+class AuditLogSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -14,5 +13,3 @@ class AuditLogSerializer(TenantAwareModelSerializer):
         if obj.user:
             return f"{obj.user.first_name} {obj.user.last_name}"
         return None
-
-

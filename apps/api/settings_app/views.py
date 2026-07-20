@@ -1,22 +1,19 @@
 from rest_framework import viewsets
-from accounts.mixins import TenantAwareViewSet
+from tenant_mixin import TenantViewSetMixin
 from .models import Company, Branch, Department
 from .serializers import CompanySerializer, BranchSerializer, DepartmentSerializer
 
 
-class CompanyViewSet(TenantAwareViewSet):
+class CompanyViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
-    filterset_fields = ['tenant']
 
 
-class BranchViewSet(TenantAwareViewSet):
+class BranchViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
-    filterset_fields = ['tenant', 'is_active']
 
 
-class DepartmentViewSet(TenantAwareViewSet):
+class DepartmentViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    filterset_fields = ['tenant', 'is_active']

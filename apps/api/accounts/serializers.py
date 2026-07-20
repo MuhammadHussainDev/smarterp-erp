@@ -1,9 +1,8 @@
 from rest_framework import serializers
-from accounts.mixins import TenantAwareModelSerializer
 from .models import User, Role, UserRole
 
 
-class UserSerializer(TenantAwareModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
     roles = serializers.SerializerMethodField()
 
@@ -18,7 +17,7 @@ class UserSerializer(TenantAwareModelSerializer):
         return [{'id': ur.role.id, 'name': ur.role.name} for ur in obj.user_roles.all()]
 
 
-class RoleSerializer(TenantAwareModelSerializer):
+class RoleSerializer(serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:
@@ -26,9 +25,7 @@ class RoleSerializer(TenantAwareModelSerializer):
         fields = '__all__'
 
 
-class UserRoleSerializer(TenantAwareModelSerializer):
+class UserRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserRole
         fields = '__all__'
-
-
