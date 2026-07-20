@@ -161,13 +161,13 @@ python manage.py collectstatic --noinput
 
 ---
 
-## Final URLs
+## Final URLs (Live)
 
 | Service | URL |
 |---------|-----|
-| Frontend | `https://smarterp-web.vercel.app` |
-| Backend API | `https://smarterp-api.vercel.app/api/v1` |
-| Admin Panel | `https://smarterp-api.vercel.app/admin/` |
+| Frontend | **https://web-tawny-pi-43.vercel.app** |
+| Backend API | **https://api-six-lovat-46.vercel.app/api/v1** |
+| Admin Panel | **https://api-six-lovat-46.vercel.app/admin/** |
 
 ## Login Credentials
 
@@ -175,6 +175,30 @@ python manage.py collectstatic --noinput
 |-------|-------|
 | Email | `admin@smarterp.com` |
 | Password | `admin123` |
+
+## Vercel Projects
+
+| Project | Vercel Name | Alias |
+|---------|-------------|-------|
+| Frontend | `web` | `https://web-tawny-pi-43.vercel.app` |
+| Backend | `api` | `https://api-six-lovat-46.vercel.app` |
+
+## Environment Variables (Already Set)
+
+### Backend (`api` project)
+| Variable | Value |
+|----------|-------|
+| `DATABASE_URL` | Neon PostgreSQL connection string |
+| `DJANGO_SECRET_KEY` | Production secret key |
+| `DEBUG` | `false` |
+| `DJANGO_SETTINGS_MODULE` | `smarterp.settings` |
+| `ALLOWED_HOSTS` | `.vercel.app,127.0.0.1` |
+| `CORS_ALLOWED_ORIGINS` | `https://smarterp-web.vercel.app,https://api-six-lovat-46.vercel.app` |
+
+### Frontend (`web` project)
+| Variable | Value |
+|----------|-------|
+| `NEXT_PUBLIC_API_URL` | `https://api-six-lovat-46.vercel.app/api/v1` |
 
 ---
 
