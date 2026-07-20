@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "SmartERP AI",
   description: "AI-Powered Cloud ERP for Small and Medium Businesses",
+  icons: "/favicon.svg",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
