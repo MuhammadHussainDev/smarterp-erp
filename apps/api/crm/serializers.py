@@ -1,8 +1,9 @@
 from rest_framework import serializers
+from tenant_serializer_mixin import TenantSerializerMixin
 from .models import Customer, Contact, Lead, Opportunity, Meeting, Note
 
 
-class CustomerSerializer(serializers.ModelSerializer):
+class CustomerSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:
@@ -10,7 +11,7 @@ class CustomerSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ContactSerializer(serializers.ModelSerializer):
+class ContactSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     customer_name = serializers.CharField(source='customer.name', read_only=True)
 
     class Meta:
@@ -18,7 +19,7 @@ class ContactSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class LeadSerializer(serializers.ModelSerializer):
+class LeadSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
     customer_name = serializers.CharField(source='customer.name', read_only=True)
 
@@ -27,7 +28,7 @@ class LeadSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OpportunitySerializer(serializers.ModelSerializer):
+class OpportunitySerializer(TenantSerializerMixin, serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
     customer_name = serializers.CharField(source='customer.name', read_only=True)
 
@@ -36,7 +37,7 @@ class OpportunitySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class MeetingSerializer(serializers.ModelSerializer):
+class MeetingSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     customer_name = serializers.CharField(source='customer.name', read_only=True)
 
     class Meta:
@@ -44,7 +45,7 @@ class MeetingSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class NoteSerializer(serializers.ModelSerializer):
+class NoteSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Note
         fields = '__all__'

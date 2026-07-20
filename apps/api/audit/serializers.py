@@ -1,8 +1,9 @@
 from rest_framework import serializers
+from tenant_serializer_mixin import TenantSerializerMixin
 from .models import AuditLog
 
 
-class AuditLogSerializer(serializers.ModelSerializer):
+class AuditLogSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
 
     class Meta:

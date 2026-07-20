@@ -1,9 +1,10 @@
 import json
 from rest_framework import serializers
+from tenant_serializer_mixin import TenantSerializerMixin
 from .models import User, Role, UserRole
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
     roles = serializers.SerializerMethodField()
 
@@ -28,7 +29,7 @@ def _parse_permissions(role):
     return perms if isinstance(perms, list) else []
 
 
-class RoleSerializer(serializers.ModelSerializer):
+class RoleSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
     rolePermissions = serializers.SerializerMethodField()
 

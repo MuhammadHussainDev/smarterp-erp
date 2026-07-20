@@ -1,8 +1,9 @@
 from rest_framework import serializers
+from tenant_serializer_mixin import TenantSerializerMixin
 from .models import Recruitment
 
 
-class RecruitmentSerializer(serializers.ModelSerializer):
+class RecruitmentSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:

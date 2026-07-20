@@ -1,10 +1,11 @@
 from rest_framework import serializers
+from tenant_serializer_mixin import TenantSerializerMixin
 from .models import (Supplier, PurchaseRequest, PurchaseRequestItem,
                      PurchaseOrder, PurchaseOrderItem, GoodsReceipt,
                      SupplierInvoice, SupplierPayment)
 
 
-class SupplierSerializer(serializers.ModelSerializer):
+class SupplierSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:
@@ -18,7 +19,7 @@ class PurchaseRequestItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PurchaseRequestSerializer(serializers.ModelSerializer):
+class PurchaseRequestSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     items = PurchaseRequestItemSerializer(many=True, read_only=True)
     supplier_name = serializers.CharField(source='supplier.name', read_only=True)
 
@@ -33,7 +34,7 @@ class PurchaseOrderItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PurchaseOrderSerializer(serializers.ModelSerializer):
+class PurchaseOrderSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     items = PurchaseOrderItemSerializer(many=True, read_only=True)
     supplier_name = serializers.CharField(source='supplier.name', read_only=True)
 
@@ -42,13 +43,13 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class GoodsReceiptSerializer(serializers.ModelSerializer):
+class GoodsReceiptSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = GoodsReceipt
         fields = '__all__'
 
 
-class SupplierInvoiceSerializer(serializers.ModelSerializer):
+class SupplierInvoiceSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     supplier_name = serializers.CharField(source='supplier.name', read_only=True)
 
     class Meta:
@@ -56,7 +57,7 @@ class SupplierInvoiceSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class SupplierPaymentSerializer(serializers.ModelSerializer):
+class SupplierPaymentSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     supplier_name = serializers.CharField(source='supplier.name', read_only=True)
 
     class Meta:

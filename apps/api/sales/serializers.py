@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from tenant_serializer_mixin import TenantSerializerMixin
 from .models import (Quotation, QuotationItem, SalesOrder, SalesOrderItem,
                      Invoice, Payment, DeliveryNote, CreditNote)
 
@@ -9,7 +10,7 @@ class QuotationItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class QuotationSerializer(serializers.ModelSerializer):
+class QuotationSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     items = QuotationItemSerializer(many=True, read_only=True)
     customer_name = serializers.CharField(source='customer.name', read_only=True)
 
@@ -24,7 +25,7 @@ class SalesOrderItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class SalesOrderSerializer(serializers.ModelSerializer):
+class SalesOrderSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     items = SalesOrderItemSerializer(many=True, read_only=True)
     customer_name = serializers.CharField(source='customer.name', read_only=True)
 
@@ -33,7 +34,7 @@ class SalesOrderSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class InvoiceSerializer(serializers.ModelSerializer):
+class InvoiceSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     customer_name = serializers.CharField(source='customer.name', read_only=True)
     balance_due = serializers.SerializerMethodField()
 
@@ -45,7 +46,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
         return obj.grand_total - obj.paid_amount
 
 
-class PaymentSerializer(serializers.ModelSerializer):
+class PaymentSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     customer_name = serializers.CharField(source='customer.name', read_only=True)
     invoice_number = serializers.CharField(source='invoice.number', read_only=True)
 
@@ -54,7 +55,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class DeliveryNoteSerializer(serializers.ModelSerializer):
+class DeliveryNoteSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     customer_name = serializers.CharField(source='customer.name', read_only=True)
 
     class Meta:
@@ -62,7 +63,7 @@ class DeliveryNoteSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CreditNoteSerializer(serializers.ModelSerializer):
+class CreditNoteSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     customer_name = serializers.CharField(source='customer.name', read_only=True)
 
     class Meta:

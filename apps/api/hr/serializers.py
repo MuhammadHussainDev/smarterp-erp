@@ -1,8 +1,9 @@
 from rest_framework import serializers
+from tenant_serializer_mixin import TenantSerializerMixin
 from .models import Employee, Attendance, LeaveType, LeaveRequest
 
 
-class EmployeeSerializer(serializers.ModelSerializer):
+class EmployeeSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)
 
     class Meta:
@@ -19,7 +20,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         return super().to_internal_value(data)
 
 
-class AttendanceSerializer(serializers.ModelSerializer):
+class AttendanceSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     employee_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -30,13 +31,13 @@ class AttendanceSerializer(serializers.ModelSerializer):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
 
 
-class LeaveTypeSerializer(serializers.ModelSerializer):
+class LeaveTypeSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = LeaveType
         fields = '__all__'
 
 
-class LeaveRequestSerializer(serializers.ModelSerializer):
+class LeaveRequestSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     employee_name = serializers.SerializerMethodField()
     leave_type_name = serializers.CharField(source='leave_type.name', read_only=True)
 
