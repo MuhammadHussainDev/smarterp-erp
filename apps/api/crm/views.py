@@ -52,7 +52,11 @@ class OpportunityViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
             if stage not in stages:
                 stages[stage] = []
             stages[stage].append(OpportunitySerializer(opp).data)
-        return Response(stages)
+        result = [
+            {"stage": stage, "total": sum(o.get("amount", 0) for o in opps), "opportunities": opps}
+            for stage, opps in stages.items()
+        ]
+        return Response(result)
 
 
 class MeetingViewSet(TenantViewSetMixin, viewsets.ModelViewSet):

@@ -90,7 +90,7 @@ export default function BranchesPage() {
             </tr>
           </thead>
           <tbody className="divide-y text-sm">
-            {branches?.map((branch: any) => (
+            {branches?.data?.map((branch: any) => (
               <tr key={branch.id}>
                 <td className="p-4">{branch.name}</td>
                 <td className="p-4 text-muted-foreground">{branch.address || "-"}</td>

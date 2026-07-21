@@ -87,7 +87,7 @@ export default function EditUserPage() {
         <div>
           <label className="block text-sm font-medium">Roles</label>
           <div className="mt-2 space-y-2">
-            {roles?.map((role: any) => (
+            {roles?.data?.map((role: any) => (
               <label key={role.id} className="flex items-center gap-2">
                 <input type="checkbox" checked={form.roleIds.includes(role.id)}
                   onChange={() => toggleRole(role.id)} className="rounded border-input" />

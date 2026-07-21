@@ -59,7 +59,7 @@ export default function BrandsPage() {
             </tr>
           </thead>
           <tbody className="divide-y text-sm">
-            {data?.map((b: any) => (
+            {data?.data?.map((b: any) => (
               <tr key={b.id}>
                 <td className="p-4 font-medium">{b.name}</td>
                 <td className="p-4 text-muted-foreground">{b._count?.products || 0}</td>

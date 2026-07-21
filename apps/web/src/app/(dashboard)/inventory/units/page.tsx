@@ -62,7 +62,7 @@ export default function UnitsPage() {
             </tr>
           </thead>
           <tbody className="divide-y text-sm">
-            {data?.map((u: any) => (
+            {data?.data?.map((u: any) => (
               <tr key={u.id}>
                 <td className="p-4 font-medium">{u.name}</td>
                 <td className="p-4 font-mono text-muted-foreground">{u.abbreviation}</td>

@@ -60,7 +60,7 @@ export default function WarehousesPage() {
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {data?.map((wh: any) => (
+        {data?.data?.map((wh: any) => (
           <div key={wh.id} className="rounded-lg border bg-card p-6">
             <div className="flex items-start justify-between">
               <div>

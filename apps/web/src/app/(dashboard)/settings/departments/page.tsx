@@ -66,7 +66,7 @@ export default function DepartmentsPage() {
               <select name="branchId" value={form.branchId} onChange={(e) => setForm({ ...form, branchId: e.target.value })}
                 className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                 <option value="">No branch</option>
-                {branches?.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                {branches?.data?.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
             </div>
           </div>
@@ -87,7 +87,7 @@ export default function DepartmentsPage() {
             </tr>
           </thead>
           <tbody className="divide-y text-sm">
-            {departments?.map((dept: any) => (
+            {departments?.data?.map((dept: any) => (
               <tr key={dept.id}>
                 <td className="p-4">{dept.name}</td>
                 <td className="p-4 text-muted-foreground">{dept.branch?.name || "-"}</td>

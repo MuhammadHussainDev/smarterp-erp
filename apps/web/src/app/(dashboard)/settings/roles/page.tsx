@@ -37,7 +37,7 @@ export default function RolesPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {roles?.map((role: any) => (
+        {roles?.data?.map((role: any) => (
           <div key={role.id} className="rounded-lg border bg-card p-6">
             <div className="flex items-start justify-between">
               <div>

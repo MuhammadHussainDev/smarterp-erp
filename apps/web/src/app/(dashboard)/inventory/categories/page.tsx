@@ -59,7 +59,7 @@ export default function CategoriesPage() {
             </tr>
           </thead>
           <tbody className="divide-y text-sm">
-            {data?.map((cat: any) => (
+            {data?.data?.map((cat: any) => (
               <tr key={cat.id}>
                 <td className="p-4 font-medium">{cat.name}</td>
                 <td className="p-4 text-muted-foreground">{cat._count?.products || 0}</td>
