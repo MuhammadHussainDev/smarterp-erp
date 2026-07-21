@@ -15,12 +15,12 @@ export default function DepartmentsPage() {
 
   const { data: departments, isLoading } = useQuery({
     queryKey: ["departments"],
-    queryFn: () => api.get<any[]>("/companies/departments"),
+    queryFn: () => api.get<any>("/companies/departments"),
   });
 
   const { data: branches } = useQuery({
     queryKey: ["branches"],
-    queryFn: () => api.get<any[]>("/companies/branches"),
+    queryFn: () => api.get<any>("/companies/branches"),
   });
 
   const mutation = useMutation({

@@ -15,7 +15,7 @@ export default function StockPage() {
 
   const { data: warehouses } = useQuery({
     queryKey: ["warehouses"],
-    queryFn: () => api.get<any[]>("/warehouse/stores"),
+    queryFn: () => api.get<any>("/warehouse/stores"),
   });
 
   if (isLoading) return <div className="h-32 animate-pulse rounded-lg bg-muted" />;

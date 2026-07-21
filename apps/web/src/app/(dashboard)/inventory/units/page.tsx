@@ -15,7 +15,7 @@ export default function UnitsPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["units"],
-    queryFn: () => api.get<any[]>("/inventory/units"),
+    queryFn: () => api.get<any>("/inventory/units"),
   });
 
   const mutation = useMutation({

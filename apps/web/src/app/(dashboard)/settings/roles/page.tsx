@@ -13,7 +13,7 @@ export default function RolesPage() {
 
   const { data: roles, isLoading } = useQuery({
     queryKey: ["roles"],
-    queryFn: () => api.get<any[]>("/roles"),
+    queryFn: () => api.get<any>("/roles"),
   });
 
   const deleteMutation = useMutation({

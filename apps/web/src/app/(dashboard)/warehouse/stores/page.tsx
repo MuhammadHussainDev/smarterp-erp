@@ -15,7 +15,7 @@ export default function WarehousesPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["warehouses"],
-    queryFn: () => api.get<any[]>("/warehouse/stores"),
+    queryFn: () => api.get<any>("/warehouse/stores"),
   });
 
   const mutation = useMutation({

@@ -15,7 +15,7 @@ export default function CategoriesPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["categories"],
-    queryFn: () => api.get<any[]>("/inventory/categories"),
+    queryFn: () => api.get<any>("/inventory/categories"),
   });
 
   const mutation = useMutation({

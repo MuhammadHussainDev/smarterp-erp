@@ -15,7 +15,7 @@ export default function BranchesPage() {
 
   const { data: branches, isLoading } = useQuery({
     queryKey: ["branches"],
-    queryFn: () => api.get<any[]>("/companies/branches"),
+    queryFn: () => api.get<any>("/companies/branches"),
   });
 
   const mutation = useMutation({

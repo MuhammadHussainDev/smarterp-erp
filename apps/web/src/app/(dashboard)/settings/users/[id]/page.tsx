@@ -17,7 +17,7 @@ export default function EditUserPage() {
 
   const { data: roles } = useQuery({
     queryKey: ["roles"],
-    queryFn: () => api.get<any[]>("/roles"),
+    queryFn: () => api.get<any>("/roles"),
   });
 
   const mutation = useMutation({

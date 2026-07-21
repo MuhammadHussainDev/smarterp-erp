@@ -17,7 +17,7 @@ export default function NewRolePage() {
 
   const { data: permissions } = useQuery({
     queryKey: ["permissions"],
-    queryFn: () => api.get<any[]>("/roles/permissions/all"),
+    queryFn: () => api.get<any>("/roles/permissions/all"),
   });
 
   const mutation = useMutation({
