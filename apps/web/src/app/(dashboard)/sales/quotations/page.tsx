@@ -45,7 +45,7 @@ export default function QuotationsPage() {
                 <td className="p-4 font-medium">{q.number}</td>
                 <td className="p-4">{q.customer?.name}</td>
                 <td className="p-4 text-muted-foreground">{new Date(q.issueDate).toLocaleDateString()}</td>
-                <td className="p-4">${q.grandTotal.toFixed(2)}</td>
+                <td className="p-4">${Number(q.grandTotal ?? 0).toFixed(2)}</td>
                 <td className="p-4">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${statusColors[q.status] || ""}`}>{q.status}</span>
                 </td>

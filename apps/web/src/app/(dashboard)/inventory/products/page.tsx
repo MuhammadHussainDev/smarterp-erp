@@ -83,7 +83,7 @@ export default function ProductsPage() {
                 <td className="p-4 font-mono text-xs">{p.barcode || "-"}</td>
                 <td className="p-4">{p.category?.name || "-"}</td>
                 <td className="p-4">{p.brand?.name || "-"}</td>
-                <td className="p-4">${p.sellingPrice.toFixed(2)}</td>
+                <td className="p-4">${Number(p.sellingPrice ?? 0).toFixed(2)}</td>
                 <td className="p-4">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${p.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"}`}>
                     {p.isActive ? "Yes" : "No"}

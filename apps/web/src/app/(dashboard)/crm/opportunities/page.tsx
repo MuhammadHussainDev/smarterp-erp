@@ -20,10 +20,12 @@ const stageLabels: Record<string, string> = {
 };
 
 export default function OpportunitiesPage() {
-  const { data: pipeline, isLoading } = useQuery({
+  const { data: pipelineData, isLoading } = useQuery({
     queryKey: ["pipeline"],
-    queryFn: () => api.get<any[]>("/crm/opportunities/pipeline"),
+    queryFn: () => api.get<any>("/crm/opportunities/pipeline"),
   });
+
+  const pipeline = Array.isArray(pipelineData) ? pipelineData : pipelineData?.data ?? [];
 
   if (isLoading) return <div className="h-32 animate-pulse rounded-lg bg-muted" />;
 

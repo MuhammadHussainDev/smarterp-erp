@@ -46,7 +46,7 @@ export default function InvoicesPage() {
                 <td className="p-4">{inv.customer?.name}</td>
                 <td className="p-4 text-muted-foreground">{new Date(inv.issueDate).toLocaleDateString()}</td>
                 <td className="p-4 text-muted-foreground">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "-"}</td>
-                <td className="p-4">${inv.grandTotal.toFixed(2)}</td>
+                <td className="p-4">${Number(inv.grandTotal ?? 0).toFixed(2)}</td>
                 <td className="p-4">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${statusColors[inv.status] || ""}`}>{inv.status}</span>
                 </td>

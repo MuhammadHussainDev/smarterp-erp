@@ -248,7 +248,7 @@ export default function PayrollPage() {
                             {(row.original.items || []).map((item: PayrollItem) => (
                               <tr key={item.id}>
                                 <td className="py-2 pr-4">{item.employeeName}</td>
-                                <td className="py-2 pr-4">${item.basicSalary.toFixed(2)}</td>
+                                <td className="py-2 pr-4">${Number(item.basicSalary ?? 0).toFixed(2)}</td>
                                 <td className="py-2 pr-4">
                                   {editingItem?.id === item.id ? (
                                     <input
@@ -259,7 +259,7 @@ export default function PayrollPage() {
                                       className="w-24 rounded border border-input bg-background px-2 py-1 text-xs"
                                     />
                                   ) : (
-                                    `$${item.allowances.toFixed(2)}`
+                                    `$${Number(item.allowances ?? 0).toFixed(2)}`
                                   )}
                                 </td>
                                 <td className="py-2 pr-4">
@@ -272,7 +272,7 @@ export default function PayrollPage() {
                                       className="w-24 rounded border border-input bg-background px-2 py-1 text-xs"
                                     />
                                   ) : (
-                                    `$${item.deductions.toFixed(2)}`
+                                    `$${Number(item.deductions ?? 0).toFixed(2)}`
                                   )}
                                 </td>
                                 <td className="py-2 pr-4">
@@ -285,10 +285,10 @@ export default function PayrollPage() {
                                       className="w-24 rounded border border-input bg-background px-2 py-1 text-xs"
                                     />
                                   ) : (
-                                    `$${item.tax.toFixed(2)}`
+                                    `$${Number(item.tax ?? 0).toFixed(2)}`
                                   )}
                                 </td>
-                                <td className="py-2 pr-4 font-medium">${item.netSalary.toFixed(2)}</td>
+                                <td className="py-2 pr-4 font-medium">${Number(item.netSalary ?? 0).toFixed(2)}</td>
                                 <td className="py-2">
                                   {editingItem?.id === item.id ? (
                                     <div className="flex gap-1">

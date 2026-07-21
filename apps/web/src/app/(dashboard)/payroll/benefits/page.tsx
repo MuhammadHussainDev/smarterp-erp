@@ -82,7 +82,7 @@ export default function BenefitsPage() {
         header: "Amount",
         cell: (info) => {
           const row = info.row.original;
-          return row.type === "PERCENTAGE" ? `${info.getValue()}%` : `$${info.getValue().toFixed(2)}`;
+          return row.type === "PERCENTAGE" ? `${info.getValue()}%` : `$${Number(info.getValue() ?? 0).toFixed(2)}`;
         },
       }),
     ],

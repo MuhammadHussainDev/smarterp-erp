@@ -45,7 +45,7 @@ export default function PurchaseOrdersPage() {
                 <td className="p-4 font-medium">{po.number}</td>
                 <td className="p-4">{po.supplier?.name}</td>
                 <td className="p-4 text-muted-foreground">{new Date(po.issueDate).toLocaleDateString()}</td>
-                <td className="p-4">${po.grandTotal.toFixed(2)}</td>
+                <td className="p-4">${Number(po.grandTotal ?? 0).toFixed(2)}</td>
                 <td className="p-4">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${statusColors[po.status] || ""}`}>{po.status}</span>
                 </td>
