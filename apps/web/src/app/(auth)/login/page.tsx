@@ -27,7 +27,7 @@ export default function LoginPage() {
         return;
       }
 
-      setAuth(data.user, data.accessToken);
+      setAuth(data.user, data.accessToken, data.refreshToken);
       router.push("/");
     } catch (err: any) {
       setError(err.message);

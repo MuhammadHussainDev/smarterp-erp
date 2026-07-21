@@ -21,7 +21,7 @@ export default function TwoFactorPage() {
 
     try {
       const data: any = await api.post("/auth/2fa/verify", { userId, code });
-      setAuth(data.user, data.accessToken);
+      setAuth(data.user, data.accessToken, data.refreshToken);
       router.push("/");
     } catch (err: any) {
       setError(err.message);
