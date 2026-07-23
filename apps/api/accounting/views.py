@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Sum, F
@@ -16,6 +16,47 @@ class AccountViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
 class JournalEntryViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
     queryset = JournalEntry.objects.all()
     serializer_class = JournalEntrySerializer
+
+    def create(self, request, *args, **kwargs):
+        tenant = request.user.tenant
+        line_items = request.data.get('lineItems', [])
+
+        last_entry = JournalEntry.objects.filter(tenant=tenant).order_by('-created_at').first()
+        if last_entry and last_entry.number and last_entry.number.startswith('JE-'):
+            try:
+                num = int(last_entry.number.split('-')[1]) + 1
+            except (ValueError, IndexError):
+                num = JournalEntry.objects.filter(tenant=tenant).count() + 1
+        else:
+            num = JournalEntry.objects.filter(tenant=tenant).count() + 1
+        number = f"JE-{num:05d}"
+
+        entry = JournalEntry.objects.create(
+            tenant=tenant,
+            number=number,
+            description=request.data.get('description', ''),
+            reference=request.data.get('reference', ''),
+            status='DRAFT',
+        )
+
+        for li in line_items:
+            account_id = li.get('accountId')
+            if not account_id:
+                continue
+            try:
+                account = Account.objects.get(id=account_id, tenant=tenant)
+            except Account.DoesNotExist:
+                continue
+            JournalEntryLine.objects.create(
+                journal_entry=entry,
+                account=account,
+                description=li.get('description', ''),
+                debit=float(li.get('debit', 0) or 0),
+                credit=float(li.get('credit', 0) or 0),
+            )
+
+        serializer = self.get_serializer(entry)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class JournalEntryLineViewSet(viewsets.ModelViewSet):
