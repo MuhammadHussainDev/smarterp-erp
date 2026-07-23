@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from tenant_mixin import TenantViewSetMixin
@@ -50,6 +50,41 @@ PERMISSIONS_CATALOG = [
 class UserViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+
+        for src, dst in [('firstName', 'first_name'), ('lastName', 'last_name')]:
+            if src in data and dst not in data:
+                data[dst] = data.pop(src)
+
+        role_ids = data.pop('roleIds', [])
+
+        email = data.get('email', '')
+        first_name = data.get('first_name', '')
+        last_name = data.get('last_name', '')
+
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'A user with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.create_user(
+            email=email,
+            password='smarterp123',
+            first_name=first_name,
+            last_name=last_name,
+            phone=data.get('phone', ''),
+            tenant=request.user.tenant,
+        )
+
+        for rid in role_ids:
+            try:
+                role = Role.objects.get(id=rid, tenant=request.user.tenant)
+                UserRole.objects.create(user=user, role=role)
+            except Role.DoesNotExist:
+                pass
+
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class RoleViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
