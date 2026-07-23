@@ -35,6 +35,15 @@ class BudgetSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Budget
         fields = '__all__'
+        extra_kwargs = {
+            'account': {'required': False},
+        }
+
+    def to_internal_value(self, data):
+        if 'accountId' in data:
+            data = dict(data)
+            data['account'] = data.pop('accountId')
+        return super().to_internal_value(data)
 
 
 class TaxRateSerializer(TenantSerializerMixin, serializers.ModelSerializer):
