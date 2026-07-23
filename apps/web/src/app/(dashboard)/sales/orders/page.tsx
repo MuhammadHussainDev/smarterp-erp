@@ -4,7 +4,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 const statusColors: Record<string, string> = {
@@ -14,6 +14,13 @@ const statusColors: Record<string, string> = {
 };
 
 export default function OrdersPage() {
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/sales/orders/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sales-orders"] }),
+  });
+
   const { data, isLoading } = useQuery({
     queryKey: ["sales-orders"],
     queryFn: () => api.get<any>("/sales/orders"),
@@ -37,6 +44,7 @@ export default function OrdersPage() {
               <th className="p-4">Date</th>
               <th className="p-4">Total</th>
               <th className="p-4">Status</th>
+              <th className="p-4">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y text-sm">
@@ -48,6 +56,9 @@ export default function OrdersPage() {
                 <td className="p-4">${Number(o.grandTotal ?? 0).toFixed(2)}</td>
                 <td className="p-4">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${statusColors[o.status] || ""}`}>{o.status}</span>
+                </td>
+                <td className="p-4">
+                  <button onClick={() => { if (confirm("Delete this sales order?")) deleteMutation.mutate(o.id); }} className="text-sm text-destructive hover:underline">Delete</button>
                 </td>
               </tr>
             ))}

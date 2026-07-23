@@ -113,6 +113,12 @@ export default function JournalPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/accounting/journal-entries/${id}`),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["journal-entries"] }); toast({ title: "Journal entry deleted" }); },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
   const columns = useMemo(
     () => [
       { accessorKey: "entryNumber", header: "Number" },
@@ -130,6 +136,13 @@ export default function JournalPage() {
           const variant = status === "POSTED" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700";
           return <Badge className={variant}>{status}</Badge>;
         },
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }: any) => (
+          <button onClick={(e) => { e.stopPropagation(); if (confirm("Delete this journal entry?")) deleteMutation.mutate(row.original.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+        ),
       },
     ],
     [],

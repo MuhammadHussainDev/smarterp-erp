@@ -11,6 +11,7 @@ import { api } from "@/lib/api";
 export default function DepartmentsPage() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", branchId: "" });
 
   const { data: departments, isLoading } = useQuery({
@@ -37,6 +38,11 @@ export default function DepartmentsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["departments"] }),
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => api.patch(`/companies/departments/${id}`, data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["departments"] }); setEditingId(null); setForm({ name: "", branchId: "" }); },
+  });
+
   if (isLoading) return <div className="h-32 animate-pulse rounded-lg bg-muted" />;
 
   return (
@@ -46,14 +52,14 @@ export default function DepartmentsPage() {
           <h1 className="text-2xl font-bold">Departments</h1>
           <p className="text-sm text-muted-foreground">Manage departments</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)}
+        <button onClick={() => { setEditingId(null); setShowForm(!showForm); setForm({ name: "", branchId: "" }); }}
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
           {showForm ? "Cancel" : "Add Department"}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(form); }}
+        <form onSubmit={(e) => { e.preventDefault(); editingId ? updateMutation.mutate({ id: editingId, data: form }) : mutation.mutate(form); }}
           className="space-y-4 rounded-lg border bg-card p-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
@@ -70,9 +76,9 @@ export default function DepartmentsPage() {
               </select>
             </div>
           </div>
-          <button type="submit" disabled={mutation.isPending}
+          <button type="submit" disabled={editingId ? updateMutation.isPending : mutation.isPending}
             className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50">
-            {mutation.isPending ? "Creating..." : "Create Department"}
+            {editingId ? (updateMutation.isPending ? "Saving..." : "Save") : (mutation.isPending ? "Creating..." : "Create Department")}
           </button>
         </form>
       )}
@@ -92,6 +98,7 @@ export default function DepartmentsPage() {
                 <td className="p-4">{dept.name}</td>
                 <td className="p-4 text-muted-foreground">{dept.branch?.name || "-"}</td>
                 <td className="p-4">
+                  <button onClick={() => { setEditingId(dept.id); setForm({ name: dept.name, branchId: dept.branchId || "" }); setShowForm(true); }} className="mr-2 text-sm text-primary hover:underline">Edit</button>
                   <button onClick={() => deleteMutation.mutate(dept.id)}
                     className="text-sm text-destructive hover:underline">Delete</button>
                 </td>

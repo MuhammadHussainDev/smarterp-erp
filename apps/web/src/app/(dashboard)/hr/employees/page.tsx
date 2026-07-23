@@ -51,6 +51,7 @@ export default function EmployeesPage() {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<any | null>(null);
   const [form, setForm] = useState({
     employeeCode: "",
     firstName: "",
@@ -79,6 +80,26 @@ export default function EmployeesPage() {
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/hr/employees/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hr", "employees"] });
+      toast({ title: "Employee deleted" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => api.patch(`/hr/employees/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hr", "employees"] });
+      setDialogOpen(false);
+      setEditingEmployee(null);
+      toast({ title: "Employee updated" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
   const columnHelper = createColumnHelper<Employee>();
   const columns = useMemo(
     () => [
@@ -97,6 +118,43 @@ export default function EmployeesPage() {
           <Badge variant={statusVariant[info.getValue()] || "outline"}>
             {info.getValue()}
           </Badge>
+        ),
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => (
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setEditingEmployee(row.original);
+                setForm({
+                  employeeCode: row.original.employeeCode,
+                  firstName: row.original.firstName,
+                  lastName: row.original.lastName,
+                  email: row.original.email,
+                  phone: row.original.phone || "",
+                  departmentId: row.original.departmentId || "",
+                  position: row.original.position,
+                  hireDate: row.original.hireDate?.split("T")[0] || "",
+                  salary: row.original.salary || 0,
+                  status: row.original.status,
+                });
+                setDialogOpen(true);
+              }}
+              className="text-sm text-primary hover:underline"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => {
+                if (confirm("Delete this employee?")) deleteMutation.mutate(row.original.id);
+              }}
+              className="text-sm text-destructive hover:underline"
+            >
+              Delete
+            </button>
+          </div>
         ),
       }),
     ],
@@ -123,7 +181,11 @@ export default function EmployeesPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate(form);
+    if (editingEmployee) {
+      updateMutation.mutate({ id: editingEmployee.id, data: form });
+    } else {
+      mutation.mutate(form);
+    }
   };
 
   if (isLoading) return <div className="h-32 animate-pulse rounded-lg bg-muted" />;
@@ -135,13 +197,19 @@ export default function EmployeesPage() {
           <h1 className="text-2xl font-bold">Employees</h1>
           <p className="text-sm text-muted-foreground">Manage employee records</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) setEditingEmployee(null);
+          }}
+        >
           <DialogTrigger asChild>
-            <Button>New Employee</Button>
+            <Button onClick={() => setEditingEmployee(null)}>New Employee</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle>New Employee</DialogTitle>
+              <DialogTitle>{editingEmployee ? "Edit Employee" : "New Employee"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
@@ -240,8 +308,14 @@ export default function EmployeesPage() {
                   </select>
                 </div>
               </div>
-              <Button type="submit" disabled={mutation.isPending} className="w-full">
-                {mutation.isPending ? "Creating..." : "Create Employee"}
+              <Button type="submit" disabled={mutation.isPending || updateMutation.isPending} className="w-full">
+                {editingEmployee
+                  ? updateMutation.isPending
+                    ? "Updating..."
+                    : "Update Employee"
+                  : mutation.isPending
+                    ? "Creating..."
+                    : "Create Employee"}
               </Button>
             </form>
           </DialogContent>
@@ -291,4 +365,3 @@ export default function EmployeesPage() {
     </div>
   );
 }
-

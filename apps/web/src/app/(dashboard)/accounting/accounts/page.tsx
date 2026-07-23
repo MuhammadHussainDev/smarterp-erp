@@ -63,6 +63,7 @@ export default function AccountsPage() {
     parentId: "",
     description: "",
   });
+  const [editingAccount, setEditingAccount] = useState<any | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["accounts"],
@@ -88,6 +89,18 @@ export default function AccountsPage() {
     onError: (err: Error) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/accounting/accounts/${id}`),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["accounts"] }); toast({ title: "Account deleted" }); },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => api.patch(`/accounting/accounts/${id}`, data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["accounts"] }); setDialogOpen(false); setEditingAccount(null); setForm({ code: "", name: "", type: "", parentId: "", description: "" }); toast({ title: "Account updated" }); },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
   const toggleMutation = useMutation({
@@ -126,8 +139,18 @@ export default function AccountsPage() {
           />
         ),
       },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }: any) => (
+          <div className="flex gap-2">
+            <button onClick={() => { setEditingAccount(row.original); setForm({ code: row.original.code, name: row.original.name, type: row.original.type, parentId: row.original.parentId || "", description: row.original.description || "" }); setDialogOpen(true); }} className="text-sm text-primary hover:underline">Edit</button>
+            <button onClick={() => { if (confirm("Delete this account?")) deleteMutation.mutate(row.original.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+          </div>
+        ),
+      },
     ],
-    [],
+    [toggleMutation, deleteMutation],
   );
 
   const table = useReactTable({
@@ -148,21 +171,25 @@ export default function AccountsPage() {
           <h1 className="text-2xl font-bold">Chart of Accounts</h1>
           <p className="text-sm text-muted-foreground">Manage your chart of accounts</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) { setEditingAccount(null); setForm({ code: "", name: "", type: "", parentId: "", description: "" }); } }}>
           <DialogTrigger asChild>
             <Button>New Account</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle>Create Account</DialogTitle>
+              <DialogTitle>{editingAccount ? "Edit Account" : "Create Account"}</DialogTitle>
             </DialogHeader>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                createMutation.mutate({
-                  ...form,
-                  parentId: form.parentId || undefined,
-                });
+                if (editingAccount) {
+                  updateMutation.mutate({ id: editingAccount.id, data: { ...form, parentId: form.parentId || undefined } });
+                } else {
+                  createMutation.mutate({
+                    ...form,
+                    parentId: form.parentId || undefined,
+                  });
+                }
               }}
               className="space-y-4"
             >
@@ -240,12 +267,12 @@ export default function AccountsPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setDialogOpen(false)}
+                  onClick={() => { setDialogOpen(false); setEditingAccount(null); setForm({ code: "", name: "", type: "", parentId: "", description: "" }); }}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? "Creating..." : "Create Account"}
+                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                  {editingAccount ? (updateMutation.isPending ? "Updating..." : "Update Account") : (createMutation.isPending ? "Creating..." : "Create Account")}
                 </Button>
               </div>
             </form>

@@ -66,6 +66,12 @@ export default function AttendancePage() {
     queryFn: () => api.get<any>("/hr/employees"),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/hr/attendance/${id}`),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["hr", "attendance"] }); toast({ title: "Attendance record deleted" }); },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
   const mutation = useMutation({
     mutationFn: (data: any) => api.post("/hr/attendance", data),
     onSuccess: () => {
@@ -99,6 +105,13 @@ export default function AttendancePage() {
           <Badge variant={statusVariant[info.getValue()] || "outline"}>
             {info.getValue()}
           </Badge>
+        ),
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => (
+          <button onClick={() => { if (confirm("Delete this attendance record?")) deleteMutation.mutate(row.original.id); }} className="text-sm text-destructive hover:underline">Delete</button>
         ),
       }),
     ],

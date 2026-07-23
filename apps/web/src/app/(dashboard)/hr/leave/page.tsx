@@ -55,6 +55,7 @@ export default function LeavePage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [typeDialogOpen, setTypeDialogOpen] = useState(false);
+  const [editingType, setEditingType] = useState<any | null>(null);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [typeForm, setTypeForm] = useState({ name: "", daysAllowed: 0 });
   const [requestForm, setRequestForm] = useState({
@@ -90,6 +91,25 @@ export default function LeavePage() {
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
+  const deleteTypeMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/hr/leave-types/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hr", "leave-types"] });
+      toast({ title: "Leave type deleted" });
+    },
+  });
+
+  const updateTypeMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => api.patch(`/hr/leave-types/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hr", "leave-types"] });
+      setTypeDialogOpen(false);
+      setEditingType(null);
+      setTypeForm({ name: "", daysAllowed: 0 });
+      toast({ title: "Leave type updated" });
+    },
+  });
+
   const requestMutation = useMutation({
     mutationFn: (data: any) => api.post("/hr/leave-requests", data),
     onSuccess: () => {
@@ -115,6 +135,16 @@ export default function LeavePage() {
     () => [
       typeColumnHelper.accessor("name", { header: "Name", enableSorting: true }),
       typeColumnHelper.accessor("daysAllowed", { header: "Days Allowed", enableSorting: true }),
+      typeColumnHelper.display({
+        id: "actions",
+        header: "Actions",
+        cell: (info) => (
+          <div className="flex gap-2">
+            <button onClick={() => { setEditingType(info.row.original); setTypeForm({ name: info.row.original.name, daysAllowed: info.row.original.daysAllowed }); setTypeDialogOpen(true); }} className="text-sm text-primary hover:underline">Edit</button>
+            <button onClick={() => { if (confirm("Delete this leave type?")) deleteTypeMutation.mutate(info.row.original.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+          </div>
+        ),
+      }),
     ],
     [],
   );
@@ -191,7 +221,11 @@ export default function LeavePage() {
 
   const handleTypeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    typeMutation.mutate(typeForm);
+    if (editingType) {
+      updateTypeMutation.mutate({ id: editingType.id, data: typeForm });
+    } else {
+      typeMutation.mutate(typeForm);
+    }
   };
 
   const handleRequestSubmit = (e: React.FormEvent) => {
@@ -216,13 +250,13 @@ export default function LeavePage() {
 
         <TabsContent value="types" className="space-y-4">
           <div className="flex justify-end">
-            <Dialog open={typeDialogOpen} onOpenChange={setTypeDialogOpen}>
+              <Dialog open={typeDialogOpen} onOpenChange={(open) => { setTypeDialogOpen(open); if (!open) { setEditingType(null); setTypeForm({ name: "", daysAllowed: 0 }); } }}>
               <DialogTrigger asChild>
                 <Button>New Leave Type</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>New Leave Type</DialogTitle>
+                  <DialogTitle>{editingType ? "Edit Leave Type" : "New Leave Type"}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleTypeSubmit} className="space-y-4">
                   <div className="space-y-2">

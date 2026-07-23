@@ -12,6 +12,8 @@ export default function CategoriesPage() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["categories"],
@@ -23,6 +25,16 @@ export default function CategoriesPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["categories"] }); setShowForm(false); setName(""); },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) => api.patch(`/inventory/categories/${id}`, { name }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["categories"] }); setEditingId(null); setEditName(""); },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/inventory/categories/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categories"] }),
+  });
+
   if (isLoading) return <div className="h-32 animate-pulse rounded-lg bg-muted" />;
 
   return (
@@ -32,13 +44,13 @@ export default function CategoriesPage() {
           <h1 className="text-2xl font-bold">Categories</h1>
           <p className="text-sm text-muted-foreground">Organize products into categories</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)}
+        <button onClick={() => { setShowForm(!showForm); setEditingId(null); setEditName(""); }}
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
           {showForm ? "Cancel" : "Add Category"}
         </button>
       </div>
 
-      {showForm && (
+      {showForm && !editingId && (
         <form onSubmit={(e) => { e.preventDefault(); mutation.mutate({ name }); }}
           className="flex gap-4 rounded-lg border bg-card p-6">
           <input placeholder="Category name" value={name} onChange={(e) => setName(e.target.value)} required
@@ -50,12 +62,25 @@ export default function CategoriesPage() {
         </form>
       )}
 
+      {showForm && editingId && (
+        <form onSubmit={(e) => { e.preventDefault(); updateMutation.mutate({ id: editingId, name: editName }); }}
+          className="flex gap-4 rounded-lg border bg-card p-6">
+          <input placeholder="Category name" value={editName} onChange={(e) => setEditName(e.target.value)} required
+            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          <button type="submit" disabled={updateMutation.isPending}
+            className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50">
+            {updateMutation.isPending ? "Saving..." : "Save"}
+          </button>
+        </form>
+      )}
+
       <div className="rounded-lg border bg-card">
         <table className="w-full">
           <thead>
             <tr className="border-b text-left text-sm font-medium">
               <th className="p-4">Name</th>
               <th className="p-4">Products</th>
+              <th className="p-4">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y text-sm">
@@ -63,6 +88,10 @@ export default function CategoriesPage() {
               <tr key={cat.id}>
                 <td className="p-4 font-medium">{cat.name}</td>
                 <td className="p-4 text-muted-foreground">{cat._count?.products || 0}</td>
+                <td className="p-4">
+                  <button onClick={() => { setShowForm(true); setEditingId(cat.id); setEditName(cat.name); }} className="mr-2 text-sm text-primary hover:underline">Edit</button>
+                  <button onClick={() => { if (confirm("Delete this category?")) deleteMutation.mutate(cat.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -71,4 +100,3 @@ export default function CategoriesPage() {
     </div>
   );
 }
-

@@ -11,6 +11,7 @@ import { api } from "@/lib/api";
 export default function SuppliersPage() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "" });
 
   const { data, isLoading } = useQuery({
@@ -23,6 +24,16 @@ export default function SuppliersPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["suppliers"] }); setShowForm(false); setForm({ name: "", email: "", phone: "" }); },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => api.patch(`/purchasing/suppliers/${id}`, data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["suppliers"] }); setEditingId(null); setForm({ name: "", email: "", phone: "" }); },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/purchasing/suppliers/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["suppliers"] }),
+  });
+
   if (isLoading) return <div className="h-32 animate-pulse rounded-lg bg-muted" />;
 
   return (
@@ -32,14 +43,14 @@ export default function SuppliersPage() {
           <h1 className="text-2xl font-bold">Suppliers</h1>
           <p className="text-sm text-muted-foreground">Manage your suppliers and vendors</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)}
+        <button onClick={() => { setEditingId(null); setShowForm(!showForm); setForm({ name: "", email: "", phone: "" }); }}
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
           {showForm ? "Cancel" : "Add Supplier"}
         </button>
       </div>
 
-      {showForm && (
-        <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(form); }}
+      {(showForm || editingId) && (
+        <form onSubmit={(e) => { e.preventDefault(); editingId ? updateMutation.mutate({ id: editingId, data: form }) : mutation.mutate(form); }}
           className="space-y-4 rounded-lg border bg-card p-6">
           <div className="grid gap-4 md:grid-cols-3">
             <input placeholder="Company name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required
@@ -49,10 +60,16 @@ export default function SuppliersPage() {
             <input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
               className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
           </div>
-          <button type="submit" disabled={mutation.isPending}
-            className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50">
-            {mutation.isPending ? "Creating..." : "Create Supplier"}
-          </button>
+          <div className="flex gap-2">
+            <button type="submit" disabled={mutation.isPending || updateMutation.isPending}
+              className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50">
+              {editingId ? (updateMutation.isPending ? "Saving..." : "Save") : (mutation.isPending ? "Creating..." : "Create Supplier")}
+            </button>
+            <button type="button" onClick={() => { setEditingId(null); setShowForm(false); setForm({ name: "", email: "", phone: "" }); }}
+              className="rounded-md border px-4 py-2 text-sm text-muted-foreground hover:bg-muted">
+              Cancel
+            </button>
+          </div>
         </form>
       )}
 
@@ -64,6 +81,7 @@ export default function SuppliersPage() {
               <th className="p-4">Email</th>
               <th className="p-4">Phone</th>
               <th className="p-4">Status</th>
+              <th className="p-4">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y text-sm">
@@ -77,6 +95,10 @@ export default function SuppliersPage() {
                     {s.status}
                   </span>
                 </td>
+                <td className="p-4">
+                  <button onClick={() => { setEditingId(s.id); setForm({ name: s.name, email: s.email || "", phone: s.phone || "" }); }} className="mr-2 text-sm text-primary hover:underline">Edit</button>
+                  <button onClick={() => { if (confirm("Delete this supplier?")) deleteMutation.mutate(s.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -85,4 +107,3 @@ export default function SuppliersPage() {
     </div>
   );
 }
-

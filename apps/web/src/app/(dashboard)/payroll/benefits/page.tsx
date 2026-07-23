@@ -23,6 +23,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/use-toast";
 
 type Benefit = {
   id: string;
@@ -34,7 +35,9 @@ type Benefit = {
 
 export default function BenefitsPage() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
+  const [editingBenefit, setEditingBenefit] = useState<Benefit | null>(null);
   const [form, setForm] = useState({ name: "", type: "FIXED" as "FIXED" | "PERCENTAGE", description: "", amount: "" });
   const [showAssign, setShowAssign] = useState(false);
   const [assignForm, setAssignForm] = useState({ employeeId: "", benefitId: "", amount: "" });
@@ -51,7 +54,17 @@ export default function BenefitsPage() {
 
   const createMutation = useMutation({
     mutationFn: (data: any) => api.post("/payroll/benefits", data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["benefits"] }); setShowForm(false); setForm({ name: "", type: "FIXED", description: "", amount: "" }); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["benefits"] }); setShowForm(false); setEditingBenefit(null); setForm({ name: "", type: "FIXED", description: "", amount: "" }); },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => api.patch(`/payroll/benefits/${id}`, data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["benefits"] }); setShowForm(false); setEditingBenefit(null); setForm({ name: "", type: "FIXED", description: "", amount: "" }); },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/payroll/benefits/${id}`),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["benefits"] }); toast({ title: "Benefit deleted" }); },
   });
 
   const assignMutation = useMutation({
@@ -85,8 +98,18 @@ export default function BenefitsPage() {
           return row.type === "PERCENTAGE" ? `${info.getValue()}%` : `$${Number(info.getValue() ?? 0).toFixed(2)}`;
         },
       }),
+      columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => (
+          <div className="flex gap-2">
+            <button onClick={() => { setEditingBenefit(row.original); setForm({ name: row.original.name, type: row.original.type, description: row.original.description || "", amount: row.original.amount.toString() }); setShowForm(true); }} className="text-sm text-primary hover:underline">Edit</button>
+            <button onClick={() => { if (confirm("Delete this benefit?")) deleteMutation.mutate(row.original.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+          </div>
+        ),
+      }),
     ],
-    []
+    [deleteMutation]
   );
 
   const table = useReactTable({
@@ -106,15 +129,15 @@ export default function BenefitsPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowAssign(true)}>Assign to Employee</Button>
-          <Button onClick={() => setShowForm(true)}>New Benefit</Button>
+          <Button onClick={() => { setEditingBenefit(null); setForm({ name: "", type: "FIXED", description: "", amount: "" }); setShowForm(true); }}>New Benefit</Button>
         </div>
       </div>
 
-      <Dialog open={showForm} onOpenChange={setShowForm}>
+      <Dialog open={showForm} onOpenChange={(open) => { if (!open) { setEditingBenefit(null); setForm({ name: "", type: "FIXED", description: "", amount: "" }); } setShowForm(open); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Benefit</DialogTitle>
-            <DialogDescription>Create a new benefit type.</DialogDescription>
+            <DialogTitle>{editingBenefit ? "Edit Benefit" : "New Benefit"}</DialogTitle>
+            <DialogDescription>{editingBenefit ? "Update the benefit details." : "Create a new benefit type."}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -159,12 +182,20 @@ export default function BenefitsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setEditingBenefit(null); setForm({ name: "", type: "FIXED", description: "", amount: "" }); setShowForm(false); }}>Cancel</Button>
             <Button
-              onClick={() => createMutation.mutate({ ...form, amount: +form.amount })}
-              disabled={!form.name || !form.amount || createMutation.isPending}
+              onClick={() => {
+                if (editingBenefit) {
+                  updateMutation.mutate({ id: editingBenefit.id, data: { ...form, amount: +form.amount } });
+                } else {
+                  createMutation.mutate({ ...form, amount: +form.amount });
+                }
+              }}
+              disabled={!form.name || !form.amount || createMutation.isPending || updateMutation.isPending}
             >
-              {createMutation.isPending ? "Creating..." : "Create"}
+              {editingBenefit
+                ? (updateMutation.isPending ? "Updating..." : "Update")
+                : (createMutation.isPending ? "Creating..." : "Create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -263,4 +294,3 @@ export default function BenefitsPage() {
     </div>
   );
 }
-

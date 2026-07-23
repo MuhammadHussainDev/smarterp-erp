@@ -46,6 +46,7 @@ export default function BudgetsPage() {
   const { toast } = useToast();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingBudget, setEditingBudget] = useState<any | null>(null);
   const [form, setForm] = useState({
     fiscalYear: new Date().getFullYear(),
     accountId: "",
@@ -71,12 +72,34 @@ export default function BudgetsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["budgets"] });
       setDialogOpen(false);
+      setEditingBudget(null);
       setForm({ fiscalYear: new Date().getFullYear(), accountId: "", amount: 0 });
       toast({ title: "Budget created", description: "The budget has been created successfully." });
     },
     onError: (err: Error) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => api.patch(`/accounting/budgets/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["budgets"] });
+      setDialogOpen(false);
+      setEditingBudget(null);
+      setForm({ fiscalYear: new Date().getFullYear(), accountId: "", amount: 0 });
+      toast({ title: "Budget updated" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/accounting/budgets/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["budgets"] });
+      toast({ title: "Budget deleted" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
   const columns = useMemo(
@@ -94,6 +117,16 @@ export default function BudgetsPage() {
         accessorKey: "amount",
         header: "Amount",
         cell: ({ getValue }: any) => `$${Number(getValue()).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }: any) => (
+          <div className="flex gap-2">
+            <button onClick={() => { setEditingBudget(row.original); setForm({ fiscalYear: row.original.fiscalYear, accountId: row.original.accountId || row.original.account?.id || "", amount: row.original.amount }); setDialogOpen(true); }} className="text-sm text-primary hover:underline">Edit</button>
+            <button onClick={() => { if (confirm("Delete this budget?")) deleteMutation.mutate(row.original.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+          </div>
+        ),
       },
     ],
     [],
@@ -117,22 +150,26 @@ export default function BudgetsPage() {
           <h1 className="text-2xl font-bold">Budgets</h1>
           <p className="text-sm text-muted-foreground">Manage annual budgets by account</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditingBudget(null); }}>
           <DialogTrigger asChild>
-            <Button>New Budget</Button>
+            <Button onClick={() => { setEditingBudget(null); setForm({ fiscalYear: new Date().getFullYear(), accountId: "", amount: 0 }); }}>New Budget</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Create Budget</DialogTitle>
+              <DialogTitle>{editingBudget ? "Edit Budget" : "Create Budget"}</DialogTitle>
             </DialogHeader>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                createMutation.mutate({
-                  fiscalYear: +form.fiscalYear,
-                  accountId: form.accountId,
-                  amount: +form.amount,
-                });
+                if (editingBudget) {
+                  updateMutation.mutate({ id: editingBudget.id, data: { fiscalYear: +form.fiscalYear, accountId: form.accountId, amount: +form.amount } });
+                } else {
+                  createMutation.mutate({
+                    fiscalYear: +form.fiscalYear,
+                    accountId: form.accountId,
+                    amount: +form.amount,
+                  });
+                }
               }}
               className="space-y-4"
             >
@@ -184,8 +221,10 @@ export default function BudgetsPage() {
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? "Creating..." : "Create Budget"}
+                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                  {editingBudget
+                    ? (updateMutation.isPending ? "Updating..." : "Update Budget")
+                    : (createMutation.isPending ? "Creating..." : "Create Budget")}
                 </Button>
               </div>
             </form>
@@ -227,4 +266,3 @@ export default function BudgetsPage() {
     </div>
   );
 }
-

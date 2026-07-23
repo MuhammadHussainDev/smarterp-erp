@@ -4,7 +4,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 const statusColors: Record<string, string> = {
@@ -14,9 +14,15 @@ const statusColors: Record<string, string> = {
 };
 
 export default function StockTransfersPage() {
+  const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["stock-transfers"],
     queryFn: () => api.get<any>("/warehouse/transfers"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/warehouse/transfers/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["stock-transfers"] }),
   });
 
   if (isLoading) return <div className="h-32 animate-pulse rounded-lg bg-muted" />;
@@ -37,6 +43,7 @@ export default function StockTransfersPage() {
               <th className="p-4">To</th>
               <th className="p-4">Date</th>
               <th className="p-4">Status</th>
+              <th className="p-4">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y text-sm">
@@ -48,6 +55,9 @@ export default function StockTransfersPage() {
                 <td className="p-4 text-muted-foreground">{new Date(t.transferDate).toLocaleDateString()}</td>
                 <td className="p-4">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${statusColors[t.status] || ""}`}>{t.status}</span>
+                </td>
+                <td className="p-4">
+                  <button onClick={() => { if (confirm("Delete this stock transfer?")) deleteMutation.mutate(t.id); }} className="text-sm text-destructive hover:underline">Delete</button>
                 </td>
               </tr>
             ))}

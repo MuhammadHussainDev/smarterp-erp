@@ -12,6 +12,7 @@ export default function BranchesPage() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", address: "", phone: "" });
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const { data: branches, isLoading } = useQuery({
     queryKey: ["branches"],
@@ -23,6 +24,15 @@ export default function BranchesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["branches"] });
       setShowForm(false);
+      setForm({ name: "", address: "", phone: "" });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => api.patch(`/companies/branches/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["branches"] });
+      setEditingId(null);
       setForm({ name: "", address: "", phone: "" });
     },
   });
@@ -45,14 +55,21 @@ export default function BranchesPage() {
           <h1 className="text-2xl font-bold">Branches</h1>
           <p className="text-sm text-muted-foreground">Manage your company branches</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)}
+        <button onClick={() => { setEditingId(null); setForm({ name: "", address: "", phone: "" }); setShowForm(!showForm); }}
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
           {showForm ? "Cancel" : "Add Branch"}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(form); }}
+        <form onSubmit={(e) => {
+              e.preventDefault();
+              if (editingId) {
+                updateMutation.mutate({ id: editingId, data: form });
+              } else {
+                mutation.mutate(form);
+              }
+            }}
           className="space-y-4 rounded-lg border bg-card p-6">
           <div className="grid gap-4 md:grid-cols-3">
             <div>
@@ -71,9 +88,11 @@ export default function BranchesPage() {
                 className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
             </div>
           </div>
-          <button type="submit" disabled={mutation.isPending}
+          <button type="submit" disabled={editingId ? updateMutation.isPending : mutation.isPending}
             className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50">
-            {mutation.isPending ? "Creating..." : "Create Branch"}
+            {editingId
+              ? (updateMutation.isPending ? "Saving..." : "Save")
+              : (mutation.isPending ? "Creating..." : "Create Branch")}
           </button>
         </form>
       )}
@@ -97,6 +116,8 @@ export default function BranchesPage() {
                 <td className="p-4 text-muted-foreground">{branch.phone || "-"}</td>
                 <td className="p-4">{branch._count?.departments || 0}</td>
                 <td className="p-4">
+                  <button onClick={() => { setEditingId(branch.id); setForm({ name: branch.name, address: branch.address || "", phone: branch.phone || "" }); setShowForm(true); }}
+                    className="mr-2 text-sm text-primary hover:underline">Edit</button>
                   <button onClick={() => deleteMutation.mutate(branch.id)}
                     className="text-sm text-destructive hover:underline">
                     Delete
@@ -110,4 +131,3 @@ export default function BranchesPage() {
     </div>
   );
 }
-

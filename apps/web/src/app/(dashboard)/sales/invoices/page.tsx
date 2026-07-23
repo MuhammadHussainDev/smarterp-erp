@@ -4,7 +4,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 const statusColors: Record<string, string> = {
@@ -13,9 +13,16 @@ const statusColors: Record<string, string> = {
 };
 
 export default function InvoicesPage() {
+  const queryClient = useQueryClient();
+
   const { data, isLoading } = useQuery({
     queryKey: ["invoices"],
     queryFn: () => api.get<any>("/sales/invoices"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/sales/invoices/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["invoices"] }),
   });
 
   if (isLoading) return <div className="h-32 animate-pulse rounded-lg bg-muted" />;
@@ -37,6 +44,7 @@ export default function InvoicesPage() {
               <th className="p-4">Due Date</th>
               <th className="p-4">Total</th>
               <th className="p-4">Status</th>
+              <th className="p-4">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y text-sm">
@@ -49,6 +57,9 @@ export default function InvoicesPage() {
                 <td className="p-4">${Number(inv.grandTotal ?? 0).toFixed(2)}</td>
                 <td className="p-4">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${statusColors[inv.status] || ""}`}>{inv.status}</span>
+                </td>
+                <td className="p-4">
+                  <button onClick={() => { if (confirm("Delete this invoice?")) deleteMutation.mutate(inv.id); }} className="text-sm text-destructive hover:underline">Delete</button>
                 </td>
               </tr>
             ))}

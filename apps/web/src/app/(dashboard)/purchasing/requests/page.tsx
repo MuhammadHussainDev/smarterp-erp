@@ -4,7 +4,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 const statusColors: Record<string, string> = {
@@ -13,9 +13,15 @@ const statusColors: Record<string, string> = {
 };
 
 export default function PurchaseRequestsPage() {
+  const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["purchase-requests"],
     queryFn: () => api.get<any>("/purchasing/requests"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/purchasing/requests/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["purchase-requests"] }),
   });
 
   if (isLoading) return <div className="h-32 animate-pulse rounded-lg bg-muted" />;
@@ -35,6 +41,7 @@ export default function PurchaseRequestsPage() {
               <th className="p-4">Issue Date</th>
               <th className="p-4">Status</th>
               <th className="p-4">Notes</th>
+              <th className="p-4">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y text-sm">
@@ -46,6 +53,9 @@ export default function PurchaseRequestsPage() {
                   <span className={`rounded-full px-2 py-0.5 text-xs ${statusColors[pr.status] || ""}`}>{pr.status}</span>
                 </td>
                 <td className="p-4 text-muted-foreground">{pr.notes || "-"}</td>
+                <td className="p-4">
+                  <button onClick={() => { if (confirm("Delete this purchase request?")) deleteMutation.mutate(pr.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+                </td>
               </tr>
             ))}
           </tbody>

@@ -4,7 +4,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 const statusColors: Record<string, string> = {
@@ -13,9 +13,15 @@ const statusColors: Record<string, string> = {
 };
 
 export default function QuotationsPage() {
+  const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["quotations"],
     queryFn: () => api.get<any>("/sales/quotations"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/sales/quotations/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["quotations"] }),
   });
 
   if (isLoading) return <div className="h-32 animate-pulse rounded-lg bg-muted" />;
@@ -37,6 +43,7 @@ export default function QuotationsPage() {
               <th className="p-4">Total</th>
               <th className="p-4">Status</th>
               <th className="p-4">Items</th>
+              <th className="p-4">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y text-sm">
@@ -50,6 +57,9 @@ export default function QuotationsPage() {
                   <span className={`rounded-full px-2 py-0.5 text-xs ${statusColors[q.status] || ""}`}>{q.status}</span>
                 </td>
                 <td className="p-4 text-muted-foreground">{q.items?.length || 0}</td>
+                <td className="p-4">
+                  <button onClick={() => { if (confirm("Delete this quotation?")) deleteMutation.mutate(q.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+                </td>
               </tr>
             ))}
           </tbody>
