@@ -31,6 +31,14 @@ class AttendanceSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     def get_employee_name(self, obj):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
 
+    def to_internal_value(self, data):
+        if isinstance(data, dict):
+            data = data.copy()
+            for src, dst in [('employeeId', 'employee'), ('checkIn', 'check_in'), ('checkOut', 'check_out')]:
+                if src in data and dst not in data:
+                    data[dst] = data.pop(src)
+        return super().to_internal_value(data)
+
 
 class LeaveTypeSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     class Meta:
@@ -48,3 +56,12 @@ class LeaveRequestSerializer(TenantSerializerMixin, serializers.ModelSerializer)
 
     def get_employee_name(self, obj):
         return f"{obj.employee.first_name} {obj.employee.last_name}"
+
+    def to_internal_value(self, data):
+        if isinstance(data, dict):
+            data = data.copy()
+            for src, dst in [('employeeId', 'employee'), ('leaveTypeId', 'leave_type'),
+                              ('startDate', 'start_date'), ('endDate', 'end_date')]:
+                if src in data and dst not in data:
+                    data[dst] = data.pop(src)
+        return super().to_internal_value(data)
