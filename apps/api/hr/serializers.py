@@ -13,8 +13,9 @@ class EmployeeSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     def to_internal_value(self, data):
         if isinstance(data, dict):
             data = data.copy()
-            for src, dst in [('employee_id', 'employee_code'), ('firstName', 'first_name'),
-                              ('lastName', 'last_name'), ('hireDate', 'hire_date')]:
+            for src, dst in [('employee_id', 'employee_code'), ('employeeCode', 'employee_code'),
+                              ('firstName', 'first_name'), ('lastName', 'last_name'),
+                              ('hireDate', 'hire_date'), ('departmentId', 'department')]:
                 if src in data and dst not in data:
                     data[dst] = data.pop(src)
         return super().to_internal_value(data)
