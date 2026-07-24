@@ -13,6 +13,7 @@ class QuotationItemSerializer(serializers.ModelSerializer):
 class QuotationSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     items = QuotationItemSerializer(many=True, read_only=True)
     customer_name = serializers.CharField(source='customer.name', read_only=True)
+    number = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Quotation
@@ -28,6 +29,7 @@ class SalesOrderItemSerializer(serializers.ModelSerializer):
 class SalesOrderSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     items = SalesOrderItemSerializer(many=True, read_only=True)
     customer_name = serializers.CharField(source='customer.name', read_only=True)
+    number = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = SalesOrder
@@ -37,6 +39,7 @@ class SalesOrderSerializer(TenantSerializerMixin, serializers.ModelSerializer):
 class InvoiceSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     customer_name = serializers.CharField(source='customer.name', read_only=True)
     balance_due = serializers.SerializerMethodField()
+    number = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Invoice
