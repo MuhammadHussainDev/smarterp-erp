@@ -62,12 +62,14 @@ export default function LeadsPage() {
       {showForm && (
         <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(form); }}
           className="space-y-4 rounded-lg border bg-card p-6">
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-5">
             <input placeholder="Contact name" value={form.contactName} onChange={(e) => setForm({ ...form, contactName: e.target.value })} required
               className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
             <input placeholder="Company name" value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })}
               className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
             <input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            <input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
               className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
             <input placeholder="Source" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })}
               className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
@@ -83,12 +85,14 @@ export default function LeadsPage() {
         <form onSubmit={(e) => { e.preventDefault(); updateMutation.mutate({ id: editingId, data: form }); }}
           className="space-y-4 rounded-lg border bg-card p-6">
           <h2 className="text-lg font-semibold">Edit Lead</h2>
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-5">
             <input placeholder="Contact name" value={form.contactName} onChange={(e) => setForm({ ...form, contactName: e.target.value })} required
               className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
             <input placeholder="Company name" value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })}
               className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
             <input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            <input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
               className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
             <input placeholder="Source" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })}
               className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
@@ -113,6 +117,7 @@ export default function LeadsPage() {
               <th className="p-4">Contact</th>
               <th className="p-4">Company</th>
               <th className="p-4">Email</th>
+              <th className="p-4">Phone</th>
               <th className="p-4">Source</th>
               <th className="p-4">Status</th>
               <th className="p-4">Actions</th>
@@ -124,6 +129,7 @@ export default function LeadsPage() {
                 <td className="p-4 font-medium">{lead.contactName}</td>
                 <td className="p-4 text-muted-foreground">{lead.companyName || "-"}</td>
                 <td className="p-4 text-muted-foreground">{lead.email || "-"}</td>
+                <td className="p-4 text-muted-foreground">{lead.phone || "-"}</td>
                 <td className="p-4">{lead.source || "-"}</td>
                 <td className="p-4">
                   <span className={`rounded-full px-2 py-0.5 text-xs ${statusColors[lead.status] || ""}`}>
