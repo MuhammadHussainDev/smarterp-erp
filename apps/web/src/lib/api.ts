@@ -57,23 +57,18 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
         isRefreshing = false;
         refreshQueue.forEach((q) => q.resolve(newToken));
         refreshQueue = [];
-        headers["Authorization"] = `Bearer ${newToken}`;
-        res = await fetch(url, {
-          method: options.method || "GET",
-          headers,
-          body: options.body ? JSON.stringify(options.body) : undefined,
-        });
       } else {
         const newToken = await new Promise<string>((resolve, reject) => {
           refreshQueue.push({ resolve, reject });
         });
-        headers["Authorization"] = `Bearer ${newToken}`;
-        res = await fetch(url, {
-          method: options.method || "GET",
-          headers,
-          body: options.body ? JSON.stringify(options.body) : undefined,
-        });
       }
+      const newToken = headers["Authorization"]?.replace("Bearer ", "") || localStorage.getItem("accessToken");
+      headers["Authorization"] = `Bearer ${newToken}`;
+      res = await fetch(url, {
+        method: options.method || "GET",
+        headers,
+        body: options.body ? JSON.stringify(options.body) : undefined,
+      });
     } catch {
       isRefreshing = false;
       refreshQueue = [];
@@ -88,6 +83,10 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: "Request failed" }));
     throw new Error(error.message || `HTTP ${res.status}`);
+  }
+
+  if (res.status === 204 || res.headers.get("content-length") === "0") {
+    return {} as T;
   }
 
   return res.json();
