@@ -51,6 +51,8 @@ class StockSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     warehouse_name = serializers.CharField(source='warehouse.name', read_only=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_sku = serializers.CharField(source='product.sku', read_only=True)
+    product_barcode = serializers.CharField(source='product.barcode', read_only=True)
+    product_min_stock_level = serializers.FloatField(source='product.min_stock_level', read_only=True)
 
     class Meta:
         model = Stock
