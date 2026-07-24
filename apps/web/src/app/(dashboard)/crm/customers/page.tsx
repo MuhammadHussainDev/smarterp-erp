@@ -27,11 +27,13 @@ export default function CustomersPage() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => api.patch(`/crm/customers/${id}`, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["customers"] }); setEditingId(null); setForm({ name: "", email: "", phone: "", industry: "" }); },
+    onError: (err: Error) => { alert("Update failed: " + err.message); },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/crm/customers/${id}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["customers"] }),
+    onError: (err: Error) => { alert("Delete failed: " + err.message); },
   });
 
   if (isLoading) return <div className="h-32 animate-pulse rounded-lg bg-muted" />;
