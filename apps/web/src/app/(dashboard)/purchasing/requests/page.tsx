@@ -4,6 +4,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
@@ -14,9 +15,17 @@ const statusColors: Record<string, string> = {
 
 export default function PurchaseRequestsPage() {
   const queryClient = useQueryClient();
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ description: "", status: "DRAFT", notes: "" });
+
   const { data, isLoading } = useQuery({
     queryKey: ["purchase-requests"],
     queryFn: () => api.get<any>("/purchasing/requests"),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: any) => api.post("/purchasing/requests", data),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["purchase-requests"] }); setShowForm(false); setForm({ description: "", status: "DRAFT", notes: "" }); },
   });
 
   const deleteMutation = useMutation({
@@ -28,40 +37,73 @@ export default function PurchaseRequestsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Purchase Requests</h1>
-        <p className="text-sm text-muted-foreground">Internal purchase requests</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Purchase Requests</h1>
+          <p className="text-sm text-muted-foreground">Internal purchase requests</p>
+        </div>
+        <button onClick={() => setShowForm(!showForm)}
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+          {showForm ? "Cancel" : "Add Request"}
+        </button>
       </div>
 
-      <div className="rounded-lg border bg-card">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b text-left text-sm font-medium">
-              <th className="p-4">Number</th>
-              <th className="p-4">Issue Date</th>
-              <th className="p-4">Status</th>
-              <th className="p-4">Notes</th>
-              <th className="p-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y text-sm">
-            {data?.data?.map((pr: any) => (
-              <tr key={pr.id}>
-                <td className="p-4 font-medium">{pr.number}</td>
-                <td className="p-4 text-muted-foreground">{new Date(pr.issueDate).toLocaleDateString()}</td>
-                <td className="p-4">
-                  <span className={`rounded-full px-2 py-0.5 text-xs ${statusColors[pr.status] || ""}`}>{pr.status}</span>
-                </td>
-                <td className="p-4 text-muted-foreground">{pr.notes || "-"}</td>
-                <td className="p-4">
-                  <button onClick={() => { if (confirm("Delete this purchase request?")) deleteMutation.mutate(pr.id); }} className="text-sm text-destructive hover:underline">Delete</button>
-                </td>
+      {showForm && (
+        <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate({ description: form.description, status: form.status, notes: form.notes || undefined }); }}
+          className="space-y-4 rounded-lg border bg-card p-6">
+          <div className="grid gap-4 md:grid-cols-3">
+            <input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm">
+              <option value="DRAFT">Draft</option>
+              <option value="PENDING">Pending</option>
+            </select>
+            <input placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm" />
+          </div>
+          <button type="submit" disabled={createMutation.isPending}
+            className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50">
+            {createMutation.isPending ? "Creating..." : "Create Request"}
+          </button>
+        </form>
+      )}
+
+      {data?.data?.length === 0 ? (
+        <div className="py-12 text-center text-muted-foreground">
+          <p className="text-lg font-medium">No purchase requests yet</p>
+          <p className="mt-1 text-sm">Create your first purchase request.</p>
+        </div>
+      ) : (
+        <div className="rounded-lg border bg-card">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b text-left text-sm font-medium">
+                <th className="p-4">Number</th>
+                <th className="p-4">Issue Date</th>
+                <th className="p-4">Status</th>
+                <th className="p-4">Notes</th>
+                <th className="p-4">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y text-sm">
+              {data?.data?.map((pr: any) => (
+                <tr key={pr.id}>
+                  <td className="p-4 font-medium">{pr.number}</td>
+                  <td className="p-4 text-muted-foreground">{pr.created_at ? new Date(pr.created_at).toLocaleDateString() : "-"}</td>
+                  <td className="p-4">
+                    <span className={`rounded-full px-2 py-0.5 text-xs ${statusColors[pr.status] || ""}`}>{pr.status}</span>
+                  </td>
+                  <td className="p-4 text-muted-foreground">{pr.notes || "-"}</td>
+                  <td className="p-4">
+                    <button onClick={() => { if (confirm("Delete this purchase request?")) deleteMutation.mutate(pr.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
-

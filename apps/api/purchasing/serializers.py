@@ -22,6 +22,7 @@ class PurchaseRequestItemSerializer(serializers.ModelSerializer):
 class PurchaseRequestSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     items = PurchaseRequestItemSerializer(many=True, read_only=True)
     supplier_name = serializers.CharField(source='supplier.name', read_only=True)
+    number = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = PurchaseRequest
@@ -37,6 +38,7 @@ class PurchaseOrderItemSerializer(serializers.ModelSerializer):
 class PurchaseOrderSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     items = PurchaseOrderItemSerializer(many=True, read_only=True)
     supplier_name = serializers.CharField(source='supplier.name', read_only=True)
+    number = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = PurchaseOrder
