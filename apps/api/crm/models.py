@@ -23,6 +23,7 @@ class Customer(models.Model):
     credit_limit = models.FloatField(default=0)
     payment_terms = models.CharField(max_length=100, blank=True, null=True)
     currency = models.CharField(max_length=3, default='USD')
+    industry = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
