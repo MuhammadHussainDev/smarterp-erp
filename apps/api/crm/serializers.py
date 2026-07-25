@@ -46,6 +46,13 @@ class LeadSerializer(TenantSerializerMixin, serializers.ModelSerializer):
             data = {**data, 'company': data.pop('companyName', '')}
         return super().to_internal_value(data)
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        name = ' '.join(filter(None, [data.pop('first_name', ''), data.pop('last_name', '')]))
+        data['contactName'] = name
+        data['companyName'] = data.pop('company', '') if 'company' in data else ''
+        return data
+
 
 class OpportunitySerializer(TenantSerializerMixin, serializers.ModelSerializer):
     tenant_name = serializers.CharField(source='tenant.name', read_only=True)

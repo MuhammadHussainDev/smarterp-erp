@@ -20,6 +20,15 @@ class EmployeeSerializer(TenantSerializerMixin, serializers.ModelSerializer):
                     data[dst] = data.pop(src)
         return super().to_internal_value(data)
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for src, dst in [('employee_code', 'employeeCode'), ('first_name', 'firstName'),
+                          ('last_name', 'lastName'), ('hire_date', 'hireDate'),
+                          ('department', 'departmentId')]:
+            if src in data:
+                data[dst] = data.pop(src)
+        return data
+
 
 class AttendanceSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     employee_name = serializers.SerializerMethodField()
@@ -38,6 +47,13 @@ class AttendanceSerializer(TenantSerializerMixin, serializers.ModelSerializer):
                 if src in data and dst not in data:
                     data[dst] = data.pop(src)
         return super().to_internal_value(data)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for src, dst in [('employee', 'employeeId'), ('check_in', 'checkIn'), ('check_out', 'checkOut')]:
+            if src in data:
+                data[dst] = data.pop(src)
+        return data
 
 
 class LeaveTypeSerializer(TenantSerializerMixin, serializers.ModelSerializer):
@@ -65,3 +81,11 @@ class LeaveRequestSerializer(TenantSerializerMixin, serializers.ModelSerializer)
                 if src in data and dst not in data:
                     data[dst] = data.pop(src)
         return super().to_internal_value(data)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for src, dst in [('employee', 'employeeId'), ('leave_type', 'leaveTypeId'),
+                          ('start_date', 'startDate'), ('end_date', 'endDate')]:
+            if src in data:
+                data[dst] = data.pop(src)
+        return data

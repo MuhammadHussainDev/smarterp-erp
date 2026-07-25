@@ -49,6 +49,13 @@ class BudgetSerializer(TenantSerializerMixin, serializers.ModelSerializer):
             mapped['fiscal_year'] = mapped.pop('fiscalYear')
         return super().to_internal_value(mapped)
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for src, dst in [('account', 'accountId'), ('fiscal_year', 'fiscalYear')]:
+            if src in data:
+                data[dst] = data.pop(src)
+        return data
+
 
 class TaxRateSerializer(TenantSerializerMixin, serializers.ModelSerializer):
     class Meta:

@@ -80,65 +80,75 @@ class ReportViewSet(viewsets.ViewSet):
         return Account.objects.filter(tenant=self.request.user.tenant)
 
     def _account_balances(self, tenant):
-        from django.db.models import Q
         lines = JournalEntryLine.objects.filter(
             journal_entry__tenant=tenant,
             journal_entry__status='POSTED'
-        )
-        lines = lines.values('account__type').annotate(
+        ).values('account_id', 'account__type', 'account__code', 'account__name').annotate(
             total_debit=Sum('debit'), total_credit=Sum('credit')
         )
-        balances = {}
+        result = {}
         for entry in lines:
-            atype = entry['account__type']
-            balances[atype] = (entry['total_debit'] or 0) - (entry['total_credit'] or 0)
-        return balances
+            result[entry['account_id']] = {
+                'id': entry['account_id'],
+                'code': entry['account__code'],
+                'name': entry['account__name'],
+                'type': entry['account__type'],
+                'balance': (entry['total_debit'] or 0) - (entry['total_credit'] or 0),
+            }
+        return result
 
     @action(detail=False, methods=['get'], url_path='balance-sheet')
     def balance_sheet(self, request):
         balances = self._account_balances(request.user.tenant)
+        accounts = Account.objects.filter(tenant=request.user.tenant)
         asset_types = ['ASSET', 'CURRENT_ASSET', 'FIXED_ASSET']
         liability_types = ['LIABILITY', 'CURRENT_LIABILITY', 'LONG_TERM_LIABILITY']
-        assets = sum(balances.get(t, 0) for t in asset_types)
-        liabilities = sum(balances.get(t, 0) for t in liability_types)
-        equity = balances.get('EQUITY', 0)
-        return Response({
-            'assets': assets,
-            'liabilities': liabilities,
-            'equity': equity,
-        })
+        groups = []
+        for label, types in [('Assets', asset_types), ('Liabilities', liability_types), ('Equity', ['EQUITY'])]:
+            items = []
+            for acct in accounts.filter(type__in=types):
+                bal = balances.get(str(acct.id), {}).get('balance', 0)
+                items.append({'id': str(acct.id), 'code': acct.code, 'name': acct.name, 'balance': bal})
+            total = sum(i['balance'] for i in items)
+            groups.append({'type': label, 'accounts': items, 'total': total})
+        return Response(groups)
 
     @action(detail=False, methods=['get'], url_path='income-statement')
     def income_statement(self, request):
         balances = self._account_balances(request.user.tenant)
-        revenue = balances.get('REVENUE', 0)
-        expenses = balances.get('EXPENSE', 0)
+        accounts = Account.objects.filter(tenant=request.user.tenant)
+        revenue_accts = accounts.filter(type='REVENUE')
+        expense_accts = accounts.filter(type='EXPENSE')
+        revenue_items = []
+        for acct in revenue_accts:
+            bal = balances.get(str(acct.id), {}).get('balance', 0)
+            revenue_items.append({'id': str(acct.id), 'name': acct.name, 'amount': bal})
+        expense_items = []
+        for acct in expense_accts:
+            bal = balances.get(str(acct.id), {}).get('balance', 0)
+            expense_items.append({'id': str(acct.id), 'name': acct.name, 'amount': bal})
+        total_revenue = sum(i['amount'] for i in revenue_items)
+        total_expenses = sum(i['amount'] for i in expense_items)
         return Response({
-            'revenue': revenue,
-            'expenses': expenses,
-            'net_income': revenue - expenses,
+            'revenue': {'items': revenue_items, 'total': total_revenue},
+            'expenses': {'items': expense_items, 'total': total_expenses},
+            'netIncome': total_revenue - total_expenses,
         })
 
     @action(detail=False, methods=['get'], url_path='trial-balance')
     def trial_balance(self, request):
-        accounts = Account.objects.filter(tenant=request.user.tenant)
-        data = AccountSerializer(accounts, many=True).data
-        lines = JournalEntryLine.objects.filter(
-            journal_entry__tenant=request.user.tenant,
-            journal_entry__status='POSTED'
-        ).values('account_id').annotate(
-            total_debit=Sum('debit'), total_credit=Sum('credit')
-        )
-        balance_map = {}
-        for entry in lines:
-            balance_map[entry['account_id']] = (entry['total_debit'] or 0) - (entry['total_credit'] or 0)
-        total_debits = sum(b for b in balance_map.values() if b > 0)
-        total_credits = sum(abs(b) for b in balance_map.values() if b < 0)
-        return Response({
-            'accounts': data,
-            'total_debits': total_debits,
-            'total_credits': total_credits,
-        })
+        balances = self._account_balances(request.user.tenant)
+        items = []
+        for acct_id, info in balances.items():
+            bal = info['balance']
+            items.append({
+                'id': info['id'],
+                'code': info['code'],
+                'name': info['name'],
+                'debit': bal if bal > 0 else 0,
+                'credit': abs(bal) if bal < 0 else 0,
+            })
+        return Response(items)
 
 
 class FrontendReportViewSet(viewsets.ViewSet):

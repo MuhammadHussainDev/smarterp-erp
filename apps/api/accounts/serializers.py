@@ -48,6 +48,12 @@ class RoleSerializer(TenantSerializerMixin, serializers.ModelSerializer):
             data['permissions'] = json.dumps(data.pop('permissionIds'))
         return super().to_internal_value(data)
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        perms = _parse_permissions(instance)
+        data['rolePermissions'] = [{'permissionId': pid} for pid in perms]
+        return data
+
 
 class UserRoleSerializer(serializers.ModelSerializer):
     class Meta:
