@@ -105,7 +105,7 @@ export default function AccountsPage() {
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
-      api.patch(`/accounting/accounts/${id}`, { isActive }),
+      api.patch(`/accounting/accounts/${id}`, { is_active: isActive }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },
@@ -128,11 +128,11 @@ export default function AccountsPage() {
         },
       },
       {
-        accessorKey: "isActive",
+        accessorKey: "is_active",
         header: "Status",
         cell: ({ row }: any) => (
           <Switch
-            checked={row.original.isActive}
+            checked={row.original.is_active}
             onCheckedChange={(checked) =>
               toggleMutation.mutate({ id: row.original.id, isActive: checked })
             }
@@ -144,7 +144,7 @@ export default function AccountsPage() {
         header: "Actions",
         cell: ({ row }: any) => (
           <div className="flex gap-2">
-            <button onClick={() => { setEditingAccount(row.original); setForm({ code: row.original.code, name: row.original.name, type: row.original.type, parentId: row.original.parentId || "", description: row.original.description || "" }); setDialogOpen(true); }} className="text-sm text-primary hover:underline">Edit</button>
+            <button onClick={() => { setEditingAccount(row.original); setForm({ code: row.original.code, name: row.original.name, type: row.original.type, parentId: row.original.parent || "", description: row.original.description || "" }); setDialogOpen(true); }} className="text-sm text-primary hover:underline">Edit</button>
             <button onClick={() => { if (confirm("Delete this account?")) deleteMutation.mutate(row.original.id); }} className="text-sm text-destructive hover:underline">Delete</button>
           </div>
         ),
@@ -183,11 +183,11 @@ export default function AccountsPage() {
               onSubmit={(e) => {
                 e.preventDefault();
                 if (editingAccount) {
-                  updateMutation.mutate({ id: editingAccount.id, data: { ...form, parentId: form.parentId || undefined } });
+                  updateMutation.mutate({ id: editingAccount.id, data: { ...form, parent: form.parentId || undefined } });
                 } else {
                   createMutation.mutate({
                     ...form,
-                    parentId: form.parentId || undefined,
+                    parent: form.parentId || undefined,
                   });
                 }
               }}
