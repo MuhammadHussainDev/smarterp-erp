@@ -41,6 +41,18 @@ class StockTransferViewSet(TenantViewSetMixin, viewsets.ModelViewSet):
     queryset = StockTransfer.objects.all()
     serializer_class = StockTransferSerializer
 
+    def perform_create(self, serializer):
+        tenant = self.request.user.tenant
+        last = StockTransfer.objects.filter(tenant=tenant).order_by('-created_at').first()
+        if last and last.number and last.number.startswith('ST-'):
+            try:
+                num = int(last.number.split('-')[1]) + 1
+            except (ValueError, IndexError):
+                num = StockTransfer.objects.filter(tenant=tenant).count() + 1
+        else:
+            num = StockTransfer.objects.filter(tenant=tenant).count() + 1
+        serializer.save(tenant=tenant, number=f"ST-{num:05d}")
+
 
 class StockTransferItemViewSet(viewsets.ModelViewSet):
     queryset = StockTransferItem.objects.all()

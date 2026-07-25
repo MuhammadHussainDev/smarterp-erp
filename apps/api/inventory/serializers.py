@@ -71,6 +71,7 @@ class StockTransferSerializer(TenantSerializerMixin, serializers.ModelSerializer
     items = StockTransferItemSerializer(many=True, read_only=True)
     source_warehouse_name = serializers.CharField(source='source_warehouse.name', read_only=True)
     destination_warehouse_name = serializers.CharField(source='destination_warehouse.name', read_only=True)
+    number = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = StockTransfer
