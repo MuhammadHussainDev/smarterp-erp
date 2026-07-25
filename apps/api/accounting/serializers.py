@@ -41,8 +41,10 @@ class BudgetSerializer(TenantSerializerMixin, serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         mapped = dict(data)
-        if 'accountId' in data:
+        if 'accountId' in data and data['accountId']:
             mapped['account'] = mapped.pop('accountId')
+        elif 'accountId' in data:
+            mapped.pop('accountId')
         if 'fiscalYear' in data:
             mapped['fiscal_year'] = mapped.pop('fiscalYear')
         return super().to_internal_value(mapped)

@@ -104,13 +104,12 @@ export default function BudgetsPage() {
 
   const columns = useMemo(
     () => [
-      { accessorKey: "fiscalYear", header: "Fiscal Year" },
+      { accessorKey: "fiscal_year", header: "Fiscal Year" },
       {
-        accessorKey: "account",
+        accessorKey: "account_code",
         header: "Account",
-        cell: ({ getValue }: any) => {
-          const acct = getValue() as any;
-          return acct ? `${acct.code} - ${acct.name}` : "-";
+        cell: ({ row }: any) => {
+          return `${row.original.account_code || ""} - ${row.original.account_name || ""}` || "-";
         },
       },
       {
@@ -123,7 +122,7 @@ export default function BudgetsPage() {
         header: "Actions",
         cell: ({ row }: any) => (
           <div className="flex gap-2">
-            <button onClick={() => { setEditingBudget(row.original); setForm({ fiscalYear: row.original.fiscalYear, accountId: row.original.accountId || row.original.account?.id || "", amount: row.original.amount }); setDialogOpen(true); }} className="text-sm text-primary hover:underline">Edit</button>
+            <button onClick={() => { setEditingBudget(row.original); setForm({ fiscalYear: row.original.fiscal_year, accountId: row.original.account || "", amount: row.original.amount }); setDialogOpen(true); }} className="text-sm text-primary hover:underline">Edit</button>
             <button onClick={() => { if (confirm("Delete this budget?")) deleteMutation.mutate(row.original.id); }} className="text-sm text-destructive hover:underline">Delete</button>
           </div>
         ),
