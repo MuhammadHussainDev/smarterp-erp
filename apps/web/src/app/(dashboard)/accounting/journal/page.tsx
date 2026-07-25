@@ -56,6 +56,7 @@ export default function JournalPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<any>(null);
+  const [editingEntry, setEditingEntry] = useState<any>(null);
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0],
     description: "",
@@ -100,13 +101,32 @@ export default function JournalPage() {
     setForm({ ...form, lineItems: items });
   }
 
+  function resetForm() {
+    setForm({ date: new Date().toISOString().split("T")[0], description: "", reference: "", lineItems: [] });
+  }
+
   const createMutation = useMutation({
     mutationFn: (payload: any) => api.post("/accounting/journal-entries", payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
       setDialogOpen(false);
-      setForm({ date: new Date().toISOString().split("T")[0], description: "", reference: "", lineItems: [] });
+      setEditingEntry(null);
+      resetForm();
       toast({ title: "Journal entry created", description: "The entry has been created successfully." });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => api.patch(`/accounting/journal-entries/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
+      setDialogOpen(false);
+      setEditingEntry(null);
+      resetForm();
+      toast({ title: "Journal entry updated" });
     },
     onError: (err: Error) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -121,7 +141,7 @@ export default function JournalPage() {
 
   const columns = useMemo(
     () => [
-      { accessorKey: "entryNumber", header: "Number" },
+      { accessorKey: "number", header: "Number" },
       {
         accessorKey: "date",
         header: "Date",
@@ -141,7 +161,10 @@ export default function JournalPage() {
         id: "actions",
         header: "Actions",
         cell: ({ row }: any) => (
-          <button onClick={(e) => { e.stopPropagation(); if (confirm("Delete this journal entry?")) deleteMutation.mutate(row.original.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+          <div className="flex gap-2">
+            <button onClick={(e) => { e.stopPropagation(); setEditingEntry(row.original); setForm({ date: row.original.date?.split("T")[0] || "", description: row.original.description || "", reference: row.original.reference || "", lineItems: (row.original.lineItems || []).map((li: any) => ({ accountId: li.account || li.accountId || "", description: li.description || "", debit: li.debit || 0, credit: li.credit || 0 })) }); setDialogOpen(true); }} className="text-sm text-primary hover:underline">Edit</button>
+            <button onClick={(e) => { e.stopPropagation(); if (confirm("Delete this journal entry?")) deleteMutation.mutate(row.original.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+          </div>
         ),
       },
     ],
@@ -166,25 +189,29 @@ export default function JournalPage() {
           <h1 className="text-2xl font-bold">Journal Entries</h1>
           <p className="text-sm text-muted-foreground">Record and manage journal entries</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>New Entry</Button>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) { setEditingEntry(null); resetForm(); } }}>          <DialogTrigger asChild>
+            <Button onClick={() => { setEditingEntry(null); resetForm(); }}>New Entry</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create Journal Entry</DialogTitle>
+              <DialogTitle>{editingEntry ? "Edit Journal Entry" : "Create Journal Entry"}</DialogTitle>
             </DialogHeader>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                createMutation.mutate({
+                const payload = {
                   ...form,
                   lineItems: form.lineItems.map((li) => ({
                     ...li,
                     debit: +li.debit,
                     credit: +li.credit,
                   })),
-                });
+                };
+                if (editingEntry) {
+                  updateMutation.mutate({ id: editingEntry.id, data: payload });
+                } else {
+                  createMutation.mutate(payload);
+                }
               }}
               className="space-y-4"
             >
@@ -300,8 +327,8 @@ export default function JournalPage() {
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={createMutation.isPending || form.lineItems.length === 0}>
-                  {createMutation.isPending ? "Creating..." : "Create Entry"}
+                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending || form.lineItems.length === 0}>
+                  {editingEntry ? (updateMutation.isPending ? "Saving..." : "Save") : (createMutation.isPending ? "Creating..." : "Create Entry")}
                 </Button>
               </div>
             </form>
@@ -351,7 +378,7 @@ export default function JournalPage() {
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Entry #{selectedEntry?.entryNumber}</DialogTitle>
+            <DialogTitle>Entry #{selectedEntry?.number}</DialogTitle>
           </DialogHeader>
           {selectedEntry && (
             <div className="space-y-4">
@@ -394,7 +421,7 @@ export default function JournalPage() {
                   {selectedEntry.lineItems?.map((li: any, i: number) => (
                     <TableRow key={li.id ?? i}>
                       <TableCell>
-                        {li.account?.code} - {li.account?.name}
+                        {li.account_code} - {li.account_name}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {li.description || "-"}
