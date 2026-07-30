@@ -29,7 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 type Attendance = {
   id: string;
   employeeId: string;
-  employee?: { firstName: string; lastName: string };
+  employee?: { id: string; firstName: string; lastName: string };
   date: string;
   checkIn: string;
   checkOut: string;
