@@ -148,7 +148,18 @@ export default function AttendancePage() {
     [],
   );
 
-  const records = useMemo(() => data?.data || [], [data]);
+  const records = useMemo(() => {
+    const raw = data?.data || [];
+    return raw.map((r: any) => ({
+      id: r.id,
+      employeeId: r.employeeId ?? r.employee ?? "",
+      employee: r.employee && typeof r.employee === "object" ? r.employee : null,
+      date: r.date ?? "",
+      checkIn: r.checkIn ?? r.check_in ?? "",
+      checkOut: r.checkOut ?? r.check_out ?? "",
+      status: r.status ?? "PRESENT",
+    }));
+  }, [data]);
   const filterDate = useMemo(
     () =>
       records.filter((r: Attendance) => {
@@ -168,7 +179,15 @@ export default function AttendancePage() {
     initialState: { sorting: [{ id: "date", desc: true }] },
   });
 
-  const employees = useMemo(() => employeesData?.data || [], [employeesData]);
+  const employees = useMemo(() => {
+    const raw = employeesData?.data || [];
+    return raw.map((e: any) => ({
+      id: e.id,
+      firstName: e.firstName ?? e.first_name ?? "",
+      lastName: e.lastName ?? e.last_name ?? "",
+      employeeCode: e.employeeCode ?? e.employee_code ?? "",
+    }));
+  }, [employeesData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

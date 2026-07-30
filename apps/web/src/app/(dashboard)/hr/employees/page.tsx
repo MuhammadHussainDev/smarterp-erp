@@ -161,7 +161,22 @@ export default function EmployeesPage() {
     [],
   );
 
-  const employees = useMemo(() => data?.data || [], [data]);
+  const employees = useMemo(() => {
+    const raw = data?.data || [];
+    return raw.map((e: any) => ({
+      id: e.id,
+      employeeCode: e.employeeCode ?? e.employee_code ?? "",
+      firstName: e.firstName ?? e.first_name ?? "",
+      lastName: e.lastName ?? e.last_name ?? "",
+      email: e.email ?? "",
+      phone: e.phone ?? "",
+      departmentId: e.departmentId ?? e.department ?? "",
+      position: e.position ?? "",
+      hireDate: e.hireDate ?? e.hire_date ?? "",
+      salary: e.salary ?? 0,
+      status: e.status ?? "ACTIVE",
+    }));
+  }, [data]);
   const filteredData = useMemo(
     () =>
       employees.filter((e: Employee) =>

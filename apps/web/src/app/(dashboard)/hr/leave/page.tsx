@@ -198,9 +198,37 @@ export default function LeavePage() {
     [],
   );
 
-  const leaveTypes = useMemo(() => typesData?.data || [], [typesData]);
-  const leaveRequests = useMemo(() => requestsData?.data || [], [requestsData]);
-  const employees = useMemo(() => employeesData?.data || [], [employeesData]);
+  const leaveTypes = useMemo(() => {
+    const raw = typesData?.data || [];
+    return raw.map((t: any) => ({
+      id: t.id,
+      name: t.name ?? "",
+      daysAllowed: t.daysAllowed ?? t.days_allowed ?? 0,
+    }));
+  }, [typesData]);
+  const leaveRequests = useMemo(() => {
+    const raw = requestsData?.data || [];
+    return raw.map((r: any) => ({
+      id: r.id,
+      employeeId: r.employeeId ?? r.employee ?? "",
+      employee: r.employee && typeof r.employee === "object" ? r.employee : null,
+      leaveTypeId: r.leaveTypeId ?? r.leave_type ?? "",
+      leaveType: r.leaveType && typeof r.leaveType === "object" ? r.leaveType : null,
+      startDate: r.startDate ?? r.start_date ?? "",
+      endDate: r.endDate ?? r.end_date ?? "",
+      reason: r.reason ?? "",
+      status: r.status ?? "PENDING",
+    }));
+  }, [requestsData]);
+  const employees = useMemo(() => {
+    const raw = employeesData?.data || [];
+    return raw.map((e: any) => ({
+      id: e.id,
+      firstName: e.firstName ?? e.first_name ?? "",
+      lastName: e.lastName ?? e.last_name ?? "",
+      employeeCode: e.employeeCode ?? e.employee_code ?? "",
+    }));
+  }, [employeesData]);
 
   const typeTable = useReactTable({
     data: leaveTypes,
