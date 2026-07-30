@@ -46,6 +46,12 @@ class AttendanceSerializer(TenantSerializerMixin, serializers.ModelSerializer):
             for src, dst in [('employeeId', 'employee'), ('checkIn', 'check_in'), ('checkOut', 'check_out')]:
                 if src in data and dst not in data:
                     data[dst] = data.pop(src)
+            for key in ['check_in', 'check_out']:
+                val = data.get(key)
+                if val == '' or val is None:
+                    data[key] = None
+                elif isinstance(val, str) and len(val) == 16 and 'T' in val:
+                    data[key] = val + ':00'
         return super().to_internal_value(data)
 
     def to_representation(self, instance):
