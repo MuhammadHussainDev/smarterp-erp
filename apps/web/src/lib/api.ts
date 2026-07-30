@@ -57,13 +57,13 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
         isRefreshing = false;
         refreshQueue.forEach((q) => q.resolve(newToken));
         refreshQueue = [];
+        headers["Authorization"] = `Bearer ${newToken}`;
       } else {
         const newToken = await new Promise<string>((resolve, reject) => {
           refreshQueue.push({ resolve, reject });
         });
+        headers["Authorization"] = `Bearer ${newToken}`;
       }
-      const newToken = headers["Authorization"]?.replace("Bearer ", "") || localStorage.getItem("accessToken");
-      headers["Authorization"] = `Bearer ${newToken}`;
       res = await fetch(url, {
         method: options.method || "GET",
         headers,

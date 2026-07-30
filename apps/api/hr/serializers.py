@@ -50,9 +50,11 @@ class AttendanceSerializer(TenantSerializerMixin, serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        for src, dst in [('employee', 'employeeId'), ('check_in', 'checkIn'), ('check_out', 'checkOut')]:
-            if src in data:
-                data[dst] = data.pop(src)
+        emp = instance.employee
+        data['employeeId'] = str(emp.id)
+        data['employee'] = {'id': str(emp.id), 'firstName': emp.first_name, 'lastName': emp.last_name}
+        data['checkIn'] = data.pop('check_in', '')
+        data['checkOut'] = data.pop('check_out', '')
         return data
 
 
@@ -84,8 +86,12 @@ class LeaveRequestSerializer(TenantSerializerMixin, serializers.ModelSerializer)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        for src, dst in [('employee', 'employeeId'), ('leave_type', 'leaveTypeId'),
-                          ('start_date', 'startDate'), ('end_date', 'endDate')]:
-            if src in data:
-                data[dst] = data.pop(src)
+        emp = instance.employee
+        data['employeeId'] = str(emp.id)
+        data['employee'] = {'id': str(emp.id), 'firstName': emp.first_name, 'lastName': emp.last_name}
+        lt = instance.leave_type
+        data['leaveTypeId'] = str(lt.id)
+        data['leaveType'] = {'id': str(lt.id), 'name': lt.name}
+        data['startDate'] = data.pop('start_date', '')
+        data['endDate'] = data.pop('end_date', '')
         return data

@@ -46,6 +46,7 @@ export default function AttendancePage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingAttendance, setEditingAttendance] = useState<any | null>(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [form, setForm] = useState({
@@ -82,6 +83,17 @@ export default function AttendancePage() {
     onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => api.patch(`/hr/attendance/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hr", "attendance"] });
+      setDialogOpen(false);
+      setEditingAttendance(null);
+      toast({ title: "Attendance updated" });
+    },
+    onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" }),
+  });
+
   const columnHelper = createColumnHelper<Attendance>();
   const columns = useMemo(
     () => [
@@ -111,7 +123,25 @@ export default function AttendancePage() {
         id: "actions",
         header: "Actions",
         cell: ({ row }) => (
-          <button onClick={() => { if (confirm("Delete this attendance record?")) deleteMutation.mutate(row.original.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setEditingAttendance(row.original);
+                setForm({
+                  employeeId: row.original.employeeId || row.original.employee?.id || "",
+                  date: row.original.date?.split("T")[0] || "",
+                  checkIn: row.original.checkIn || "",
+                  checkOut: row.original.checkOut || "",
+                  status: row.original.status || "PRESENT",
+                });
+                setDialogOpen(true);
+              }}
+              className="text-sm text-primary hover:underline"
+            >
+              Edit
+            </button>
+            <button onClick={() => { if (confirm("Delete this attendance record?")) deleteMutation.mutate(row.original.id); }} className="text-sm text-destructive hover:underline">Delete</button>
+          </div>
         ),
       }),
     ],
@@ -142,7 +172,11 @@ export default function AttendancePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate(form);
+    if (editingAttendance) {
+      updateMutation.mutate({ id: editingAttendance.id, data: form });
+    } else {
+      mutation.mutate(form);
+    }
   };
 
   if (isLoading) return <div className="h-32 animate-pulse rounded-lg bg-muted" />;
@@ -154,13 +188,13 @@ export default function AttendancePage() {
           <h1 className="text-2xl font-bold">Attendance</h1>
           <p className="text-sm text-muted-foreground">Track employee attendance records</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditingAttendance(null); }}>
           <DialogTrigger asChild>
             <Button>Mark Attendance</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle>Mark Attendance</DialogTitle>
+              <DialogTitle>{editingAttendance ? "Edit Attendance" : "Mark Attendance"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -221,8 +255,10 @@ export default function AttendancePage() {
                   <option value="LEAVE">Leave</option>
                 </select>
               </div>
-              <Button type="submit" disabled={mutation.isPending} className="w-full">
-                {mutation.isPending ? "Saving..." : "Save Attendance"}
+              <Button type="submit" disabled={mutation.isPending || updateMutation.isPending} className="w-full">
+                {editingAttendance
+                  ? updateMutation.isPending ? "Updating..." : "Update Attendance"
+                  : mutation.isPending ? "Saving..." : "Save Attendance"}
               </Button>
             </form>
           </DialogContent>
