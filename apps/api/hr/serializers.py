@@ -18,6 +18,8 @@ class EmployeeSerializer(TenantSerializerMixin, serializers.ModelSerializer):
                               ('hireDate', 'hire_date'), ('departmentId', 'department')]:
                 if src in data and dst not in data:
                     data[dst] = data.pop(src)
+            if not data.get('hire_date'):
+                data.pop('hire_date', None)
         return super().to_internal_value(data)
 
     def to_representation(self, instance):

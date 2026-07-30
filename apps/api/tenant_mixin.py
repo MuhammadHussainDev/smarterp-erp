@@ -18,3 +18,21 @@ class TenantViewSetMixin:
                 {'error': str(e), 'traceback': traceback.format_exc()},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+    def update(self, request, *args, **kwargs):
+        try:
+            return super().update(request, *args, **kwargs)
+        except Exception as e:
+            return Response(
+                {'error': str(e), 'traceback': traceback.format_exc()},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    def partial_update(self, request, *args, **kwargs):
+        try:
+            return super().partial_update(request, *args, **kwargs)
+        except Exception as e:
+            return Response(
+                {'error': str(e), 'traceback': traceback.format_exc()},
+                status=status.HTTP_400_BAD_REQUEST
+            )
