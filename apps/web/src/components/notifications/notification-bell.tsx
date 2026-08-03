@@ -15,7 +15,8 @@ export function NotificationBell() {
   const { data: unreadData } = useQuery({
     queryKey: ["notifications", "unread-count"],
     queryFn: () => api.get("/notifications/unread-count"),
-    refetchInterval: 30000,
+    staleTime: 60 * 1000,
+    refetchOnMount: true,
   });
   const unreadCount = (unreadData as any)?.count ?? 0;
 
